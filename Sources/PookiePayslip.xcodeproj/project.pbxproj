@@ -1,0 +1,350 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 100;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5A942446F7284BEE8389EEE3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE6A12BF282B429DABA622AB /* Assets.xcassets */; };
+		655DFEC077B74E548E2FBB7F /* PookiePayslipApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 550A975BD5CD494AA91BD04F /* PookiePayslipApp.swift */; };
+		6A493B31905B4D3EABA95995 /* Quicksand-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA79922AD2F5458F9983CE11 /* Quicksand-Bold.ttf */; };
+		791F552B47C64CE89665FE41 /* Quicksand-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5AE2717D8C934CDA8C3B29CB /* Quicksand-Medium.ttf */; };
+		8552A9D4DF524271BAC4A90B /* AppCore in Frameworks */ = {isa = PBXBuildFile; productRef = 71251D6ED7A04481807B337B /* AppCore */; };
+		8A7BEB0298F74C6391AB4831 /* Quicksand-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 062C5F86EB3E41D7B56293FB /* Quicksand-Regular.ttf */; };
+		D24446D1F10E433E90C04CEC /* Quicksand-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 82EE399F61ED4238A9951C5F /* Quicksand-SemiBold.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		062C5F86EB3E41D7B56293FB /* Quicksand-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Quicksand-Regular.ttf"; path = "App/Resources/Fonts/Quicksand-Regular.ttf"; sourceTree = "<group>"; };
+		550A975BD5CD494AA91BD04F /* PookiePayslipApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = PookiePayslipApp.swift; path = App/PookiePayslipApp.swift; sourceTree = "<group>"; };
+		5AE2717D8C934CDA8C3B29CB /* Quicksand-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Quicksand-Medium.ttf"; path = "App/Resources/Fonts/Quicksand-Medium.ttf"; sourceTree = "<group>"; };
+		82EE399F61ED4238A9951C5F /* Quicksand-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Quicksand-SemiBold.ttf"; path = "App/Resources/Fonts/Quicksand-SemiBold.ttf"; sourceTree = "<group>"; };
+		9FD0003B885149F6838A9834 /* PookiePayslip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PookiePayslip.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA79922AD2F5458F9983CE11 /* Quicksand-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Quicksand-Bold.ttf"; path = "App/Resources/Fonts/Quicksand-Bold.ttf"; sourceTree = "<group>"; };
+		DE6A12BF282B429DABA622AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = App/Assets.xcassets; sourceTree = "<group>"; };
+		FF5E7392824746C08010FC6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = App/Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4E8D145D23E7467E811DD2C0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				8552A9D4DF524271BAC4A90B /* AppCore in Frameworks */,
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		550B90A4377D4E48900BB994 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9FD0003B885149F6838A9834 /* PookiePayslip.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		78088179C58243D19CA922E1 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				062C5F86EB3E41D7B56293FB /* Quicksand-Regular.ttf */,
+				5AE2717D8C934CDA8C3B29CB /* Quicksand-Medium.ttf */,
+				82EE399F61ED4238A9951C5F /* Quicksand-SemiBold.ttf */,
+				AA79922AD2F5458F9983CE11 /* Quicksand-Bold.ttf */,
+			);
+			name = Fonts;
+			sourceTree = "<group>";
+		};
+		DD7E155628BD4F11935487F8 = {
+			isa = PBXGroup;
+			children = (
+				DE6A12BF282B429DABA622AB /* Assets.xcassets */,
+				550A975BD5CD494AA91BD04F /* PookiePayslipApp.swift */,
+				78088179C58243D19CA922E1 /* Fonts */,
+				FF5E7392824746C08010FC6C /* Info.plist */,
+				550B90A4377D4E48900BB994 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		11BB4B567B0C479091DF0CF7 /* PookiePayslip */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 08B55A81B2EA40FC9A81EE9E /* Build configuration list for PBXNativeTarget "PookiePayslip" */;
+			buildPhases = (
+				C097A44E7D7047DB981C199D /* Sources */,
+				4E8D145D23E7467E811DD2C0 /* Frameworks */,
+				49288C4D5F364DB4BD39AC73 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = PookiePayslip;
+			packageProductDependencies = (
+				71251D6ED7A04481807B337B /* AppCore */,
+			);
+			productName = PookiePayslip;
+			productReference = 9FD0003B885149F6838A9834 /* PookiePayslip.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		22F8040FC89A4BF6938EAB8E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 2650;
+				TargetAttributes = {
+					11BB4B567B0C479091DF0CF7 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = 138E6054B21648D1BD01EEE7 /* Build configuration list for PBXProject "PookiePayslip" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DD7E155628BD4F11935487F8;
+			packageReferences = (
+				99E2713286AB4BFE834A7607 /* XCLocalSwiftPackageReference "../" */,
+				D69C9E012FF528D70091C8B5 /* XCRemoteSwiftPackageReference "SwiftRex" */,
+			);
+			preferredProjectObjectVersion = 56;
+			productRefGroup = 550B90A4377D4E48900BB994 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				11BB4B567B0C479091DF0CF7 /* PookiePayslip */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		49288C4D5F364DB4BD39AC73 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				5A942446F7284BEE8389EEE3 /* Assets.xcassets in Resources */,
+				8A7BEB0298F74C6391AB4831 /* Quicksand-Regular.ttf in Resources */,
+				791F552B47C64CE89665FE41 /* Quicksand-Medium.ttf in Resources */,
+				D24446D1F10E433E90C04CEC /* Quicksand-SemiBold.ttf in Resources */,
+				6A493B31905B4D3EABA95995 /* Quicksand-Bold.ttf in Resources */,
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C097A44E7D7047DB981C199D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				655DFEC077B74E548E2FBB7F /* PookiePayslipApp.swift in Sources */,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		023616029D8D44DAA98EA1E0 /* Release configuration for PBXNativeTarget "PookiePayslip" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 7BK8NL3DYL;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "App/Info-Release.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = lu.ios.PookiePayslip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		17053A5B1E9E4035B0741F6E /* Debug configuration for PBXNativeTarget "PookiePayslip" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				DEVELOPMENT_TEAM = 7BK8NL3DYL;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = App/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = lu.ios.PookiePayslip;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		9AB0131331834D41A642F485 /* Debug configuration for PBXProject "PookiePayslip" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 7BK8NL3DYL;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		D277C4BEDB744D76B619A11B /* Release configuration for PBXProject "PookiePayslip" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 7BK8NL3DYL;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		08B55A81B2EA40FC9A81EE9E /* Build configuration list for PBXNativeTarget "PookiePayslip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				17053A5B1E9E4035B0741F6E /* Debug configuration for PBXNativeTarget "PookiePayslip" */,
+				023616029D8D44DAA98EA1E0 /* Release configuration for PBXNativeTarget "PookiePayslip" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		138E6054B21648D1BD01EEE7 /* Build configuration list for PBXProject "PookiePayslip" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9AB0131331834D41A642F485 /* Debug configuration for PBXProject "PookiePayslip" */,
+				D277C4BEDB744D76B619A11B /* Release configuration for PBXProject "PookiePayslip" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		99E2713286AB4BFE834A7607 /* XCLocalSwiftPackageReference "../" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D69C9E012FF528D70091C8B5 /* XCRemoteSwiftPackageReference "SwiftRex" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftRex/SwiftRex.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+			traits = (
+				ReactiveConcurrency,
+				default,
+			);
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		71251D6ED7A04481807B337B /* AppCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 99E2713286AB4BFE834A7607 /* XCLocalSwiftPackageReference "../" */;
+			productName = AppCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 22F8040FC89A4BF6938EAB8E /* Project object */;
+}
