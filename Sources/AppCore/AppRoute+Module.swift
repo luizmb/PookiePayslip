@@ -42,12 +42,12 @@ public extension AppRoute {
     @MainActor @ViewBuilder
     func view(in store: MainStoreType, world: World) -> some View {
         switch self {
-        case .calendar:     Scope<AppAction, AppState, World, CalendarFeature>.calendar.view(from: store, world: world)
-        case .dayDetail:    Scope<AppAction, AppState, World, DayDetailFeature>.dayDetail.view(from: store, world: world)
-        case .reportInput:  Scope<AppAction, AppState, World, ReportInputFeature>.reportInput.view(from: store, world: world)
-        case .reportResult: Scope<AppAction, AppState, World, ReportResultFeature>.reportResult.view(from: store, world: world)
-        case .salaryEditor: Scope<AppAction, AppState, World, SalaryEditorFeature>.salaryEditor.view(from: store, world: world)
-        case .settings:     Scope<AppAction, AppState, World, SettingsFeature>.settings.view(from: store, world: world)
+        case .calendar:     LiftedScope<CalendarFeature>.calendar.view(from: store, world: world)
+        case .dayDetail:    LiftedScope<DayDetailFeature>.dayDetail.view(from: store, world: world)
+        case .reportInput:  LiftedScope<ReportInputFeature>.reportInput.view(from: store, world: world)
+        case .reportResult: LiftedScope<ReportResultFeature>.reportResult.view(from: store, world: world)
+        case .salaryEditor: LiftedScope<SalaryEditorFeature>.salaryEditor.view(from: store, world: world)
+        case .settings:     LiftedScope<SettingsFeature>.settings.view(from: store, world: world)
         }
     }
 }
