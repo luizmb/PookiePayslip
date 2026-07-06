@@ -1,20 +1,21 @@
 import AppDomain
 import CalendarFeature
+import Core
 import CoreFP
 import CoreFPOperators
 import DayDetailFeature
 import FPMacros
 import Foundation
 import NavigationFeature
+import ReactiveConcurrency
 import ReportInputFeature
 import ReportResultFeature
 import SalaryEditorFeature
 import SettingsFeature
 import SwiftRex
 import SwiftRexArchitecture
-import ReactiveConcurrency
-import SwiftRexReactiveConcurrency
 import SwiftRexOperators
+import SwiftRexReactiveConcurrency
 
 // MARK: - AppState
 
@@ -75,12 +76,12 @@ public extension MainStore {
 private extension MainStore {
     static func behavior() -> Behavior<AppAction, AppState, World> {
         NavigationFeature.behavior().lift(action: \.navigation, state: \.navigation, environment: { _ in () })
-        <> calendarScope.behavior
-        <> dayDetailScope.behavior
-        <> reportInputScope.behavior
-        <> reportResultScope.behavior
-        <> salaryEditorScope.behavior
-        <> settingsScope.behavior
+        <> Scope<AppAction, AppState, World, CalendarFeature>.calendar.behavior
+        <> Scope<AppAction, AppState, World, DayDetailFeature>.dayDetail.behavior
+        <> Scope<AppAction, AppState, World, ReportInputFeature>.reportInput.behavior
+        <> Scope<AppAction, AppState, World, ReportResultFeature>.reportResult.behavior
+        <> Scope<AppAction, AppState, World, SalaryEditorFeature>.salaryEditor.behavior
+        <> Scope<AppAction, AppState, World, SettingsFeature>.settings.behavior
         <> bridgeBehavior()
     }
 }
@@ -184,5 +185,124 @@ private extension Store<AppAction, AppState, World> {
             )
         )
         return self
+    }
+}
+
+// MARK: - Feature scopes
+
+public extension Scope<AppAction, AppState, World, CalendarFeature> {
+    static var calendar: Self {
+        Scope(
+            CalendarFeature.self,
+            action: \.calendar,
+            state: \.calendar,
+            environment: { world in
+                        CalendarFeature.Environment(
+                            decoder:     world.decoder,
+                            readFile:    world.readFile,
+                            currentDate: world.currentDate,
+                            calendar:    world.calendar,
+                            formatDate:  world.formatDate,
+                            formatMoney: world.formatMoney
+                        )
+                    }
+        )
+    }
+}
+
+public extension Scope<AppAction, AppState, World, DayDetailFeature> {
+    static var dayDetail: Self {
+        Scope(
+            DayDetailFeature.self,
+            action: \.dayDetail,
+            state: \.dayDetail,
+            environment: { world in
+                        DayDetailFeature.Environment(
+                            decoder:     world.decoder,
+                            encoder:     world.encoder,
+                            readFile:    world.readFile,
+                            saveFile:    world.saveFile,
+                            currentDate: world.currentDate,
+                            newID:       world.newID,
+                            calendar:    world.calendar,
+                            dayBefore:   world.dayBefore,
+                            dayAfter:    world.dayAfter,
+                            loadSettings: world.loadSettings,
+                            formatDate:  world.formatDate
+                        )
+                    }
+        )
+    }
+}
+
+public extension Scope<AppAction, AppState, World, ReportInputFeature> {
+    static var reportInput: Self {
+        Scope(
+            ReportInputFeature.self,
+            action: \.reportInput,
+            state: \.reportInput,
+            environment: { world in
+                        ReportInputFeature.Environment(
+                            decoder:     world.decoder,
+                            readFile:    world.readFile,
+                            currentDate: world.currentDate,
+                            calendar:    world.calendar,
+                            calcTax:     world.calcTax
+                        )
+                    }
+        )
+    }
+}
+
+public extension Scope<AppAction, AppState, World, ReportResultFeature> {
+    static var reportResult: Self {
+        Scope(
+            ReportResultFeature.self,
+            action: \.reportResult,
+            state: \.reportResult,
+            environment: { world in
+                        ReportResultFeature.Environment(
+                            renderPDF: { r, recs in world.renderPDF(r, recs) },
+                            formatDate: world.formatDate,
+                            formatMoney: world.formatMoney
+                        )
+                    }
+        )
+    }
+}
+
+public extension Scope<AppAction, AppState, World, SalaryEditorFeature> {
+    static var salaryEditor: Self {
+        Scope(
+            SalaryEditorFeature.self,
+            action: \.salaryEditor,
+            state: \.salaryEditor,
+            environment: { world in
+                        SalaryEditorFeature.Environment(
+                            decoder:  world.decoder,
+                            encoder:  world.encoder,
+                            readFile: world.readFile,
+                            saveFile: world.saveFile,
+                            calendar: world.calendar
+                        )
+                    }
+        )
+    }
+}
+
+public extension Scope<AppAction, AppState, World, SettingsFeature> {
+    static var settings: Self {
+        Scope(
+            SettingsFeature.self,
+            action: \.settings,
+            state: \.settings,
+            environment: { world in
+                        SettingsFeature.Environment(
+                            loadSettings: world.loadSettings,
+                            saveSettings: world.saveSettings,
+                            exportDatabase: world.exportDatabase
+                        )
+                    }
+        )
     }
 }
