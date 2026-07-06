@@ -58,6 +58,7 @@ public enum AppAction: Sendable {
 
 public typealias MainStoreType = any StoreType<AppAction, AppState>
 public typealias MainStore = Store<AppAction, AppState, World>
+public typealias LiftedScope<F: Feature> = Scope<AppAction, AppState, World, F>
 
 // MARK: - Store factory
 
@@ -76,12 +77,12 @@ public extension MainStore {
 private extension MainStore {
     static func behavior() -> Behavior<AppAction, AppState, World> {
         NavigationFeature.behavior().lift(action: \.navigation, state: \.navigation, environment: { _ in () })
-        <> Scope<AppAction, AppState, World, CalendarFeature>.calendar.behavior
-        <> Scope<AppAction, AppState, World, DayDetailFeature>.dayDetail.behavior
-        <> Scope<AppAction, AppState, World, ReportInputFeature>.reportInput.behavior
-        <> Scope<AppAction, AppState, World, ReportResultFeature>.reportResult.behavior
-        <> Scope<AppAction, AppState, World, SalaryEditorFeature>.salaryEditor.behavior
-        <> Scope<AppAction, AppState, World, SettingsFeature>.settings.behavior
+        <> LiftedScope<CalendarFeature>.calendar.behavior
+        <> LiftedScope<DayDetailFeature>.dayDetail.behavior
+        <> LiftedScope<ReportInputFeature>.reportInput.behavior
+        <> LiftedScope<ReportResultFeature>.reportResult.behavior
+        <> LiftedScope<SalaryEditorFeature>.salaryEditor.behavior
+        <> LiftedScope<SettingsFeature>.settings.behavior
         <> bridgeBehavior()
     }
 }
@@ -190,7 +191,7 @@ private extension Store<AppAction, AppState, World> {
 
 // MARK: - Feature scopes
 
-public extension Scope<AppAction, AppState, World, CalendarFeature> {
+public extension LiftedScope<CalendarFeature> {
     static var calendar: Self {
         Scope(
             CalendarFeature.self,
@@ -210,7 +211,7 @@ public extension Scope<AppAction, AppState, World, CalendarFeature> {
     }
 }
 
-public extension Scope<AppAction, AppState, World, DayDetailFeature> {
+public extension LiftedScope<DayDetailFeature> {
     static var dayDetail: Self {
         Scope(
             DayDetailFeature.self,
@@ -235,7 +236,7 @@ public extension Scope<AppAction, AppState, World, DayDetailFeature> {
     }
 }
 
-public extension Scope<AppAction, AppState, World, ReportInputFeature> {
+public extension LiftedScope<ReportInputFeature> {
     static var reportInput: Self {
         Scope(
             ReportInputFeature.self,
@@ -254,7 +255,7 @@ public extension Scope<AppAction, AppState, World, ReportInputFeature> {
     }
 }
 
-public extension Scope<AppAction, AppState, World, ReportResultFeature> {
+public extension LiftedScope<ReportResultFeature> {
     static var reportResult: Self {
         Scope(
             ReportResultFeature.self,
@@ -271,7 +272,7 @@ public extension Scope<AppAction, AppState, World, ReportResultFeature> {
     }
 }
 
-public extension Scope<AppAction, AppState, World, SalaryEditorFeature> {
+public extension LiftedScope<SalaryEditorFeature> {
     static var salaryEditor: Self {
         Scope(
             SalaryEditorFeature.self,
@@ -290,7 +291,7 @@ public extension Scope<AppAction, AppState, World, SalaryEditorFeature> {
     }
 }
 
-public extension Scope<AppAction, AppState, World, SettingsFeature> {
+public extension LiftedScope<SettingsFeature> {
     static var settings: Self {
         Scope(
             SettingsFeature.self,
