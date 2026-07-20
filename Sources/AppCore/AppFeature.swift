@@ -99,8 +99,9 @@ private func bridgeBehavior() -> Behavior<AppAction, AppState, World> {
     Behavior<AppAction, AppState, World>.identity
 
     // Calendar salary chip tapped → seed month date in editor + push nav
-        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSalaryEditor),
-            dispatch: .action(review: const(.navigation(.push(.salaryEditor)))),
+        .on(
+            .action(\.calendar.openSalaryEditor),
+            dispatch: .action(\.navigation.push.salaryEditor),
             reduce: { _, state in
                 state.salaryEditor.amount      = state.calendar.salary?.amount      ?? 0
                 state.salaryEditor.periodicity = state.calendar.salary?.periodicity ?? .hourly
@@ -108,65 +109,60 @@ private func bridgeBehavior() -> Behavior<AppAction, AppState, World> {
                 state.salaryEditor.studentLoan = state.calendar.salary?.studentLoan ?? .none
                 state.salaryEditor.pensionRate = state.calendar.salary?.pensionRate ?? 0
                 state.salaryEditor.monthDate   = state.calendar.currentMonth
-            })
+            }
+        )
 
     // Salary saved → update calendar + pop
-        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved),
-            dispatch: .action(review: { salary in .calendar(.salaryUpdated(salary)) }))
-        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved),
-            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.salaryEditor.saved), dispatch: .action(\.calendar.salaryUpdated))
+        .on(.action(\.salaryEditor.saved), dispatch: .action(review: const(.navigation(.pop))))
 
     // Salary back → pop
-        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.back),
-            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.salaryEditor.back), dispatch: .action(\.navigation.pop))
 
     // Settings gear tapped → push settings
-        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSettings),
-            dispatch: .action(review: const(.navigation(.push(.settings)))))
+        .on(.action(\.calendar.openSettings), dispatch: .action(\.navigation.push.settings))
 
     // Settings saved / back → pop
-        .on(.action(AppAction.prism.settings >>> SettingsFeature.Action.prism.saved),
-            dispatch: .action(review: const(.navigation(.pop))))
-        .on(.action(AppAction.prism.settings >>> SettingsFeature.Action.prism.back),
-            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.settings.saved), dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.settings.back), dispatch: .action(\.navigation.pop))
 
     // selectDay: push nav to dayDetail, seed dayDetail.date for the onAppear load
-        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.selectDay),
-            dispatch: .action(review: { date in .navigation(.push(.dayDetail(date))) }),
-            reduce:   { date, state in state.dayDetail.date = date })
+        .on(
+            .action(\.calendar.selectDay),
+            dispatch: .action(\.navigation.push.dayDetail),
+            reduce: { date, state in state.dayDetail.date = date }
+        )
 
     // openReport: push nav to reportInput
-        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openReport),
-            dispatch: .action(review: const(.navigation(.push(.reportInput)))))
+        .on(.action(\.calendar.openReport), dispatch: .action(\.navigation.push.reportInput))
 
     // dayLoaded: keep navigation path in sync (covers prevDay, nextDay, and initial load)
-        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.dayLoaded),
-            dispatch: .action(review: { args in .navigation(.replaceLast(.dayDetail(args.0.date))) }))
+        .on(
+            .action(\.dayDetail.dayLoaded),
+            dispatch: .action(review: { args in .navigation(.replaceLast(.dayDetail(args.0.date))) })
+        )
 
     // saveCompleted: route saved record to CalendarFeature cache
-        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.saveCompleted),
-            dispatch: .action(review: { record in .calendar(.recordUpdated(record)) }))
+        .on(.action(\.dayDetail.saveCompleted), dispatch: .action(\.calendar.recordUpdated))
 
     // done: pop navigation
-        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.done),
-            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.dayDetail.done), dispatch: .action(\.navigation.pop))
 
     // reportGenerated: push nav to reportResult
-        .on(.action(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated),
-            dispatch: .action(review: const(.navigation(.push(.reportResult)))))
+        .on(.action(\.reportInput.reportGenerated), dispatch: .action(review: const(.navigation(.push(.reportResult)))))
 
     // reportGenerated: route to ReportResultFeature so it seeds its own state (including records for PDF)
-        .on(.action(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated),
+        .on(
+            .action(\.reportInput.reportGenerated),
             dispatch: .action(review: { args in
                 let (report, records, from, to) = args
                 return .reportResult(.loaded(report, records, from: from, to: to))
-            }))
+            })
+        )
 
     // back: pop nav
-        .on(.action(AppAction.prism.reportInput  >>> ReportInputFeature.Action.prism.back),
-            dispatch: .action(review: const(.navigation(.pop))))
-        .on(.action(AppAction.prism.reportResult >>> ReportResultFeature.Action.prism.back),
-            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(\.reportInput.back), dispatch: .action(\.navigation.pop))
+        .on(.action(\.reportResult.back), dispatch: .action(\.navigation.pop))
 }
 
 private extension Store<AppAction, AppState, World> {
