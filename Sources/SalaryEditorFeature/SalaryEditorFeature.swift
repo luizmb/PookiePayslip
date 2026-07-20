@@ -8,7 +8,7 @@ import SwiftRexArchitecture
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
-@Feature(type: .moduleEntryPoint, strategy: .observationSimple)
+@Feature(strategy: .observationSimple)
 public enum SalaryEditorFeature {
 
     // MARK: - State
@@ -205,6 +205,3 @@ public enum SalaryEditorFeature {
 
     public typealias Content = SalaryEditorView
 }
-
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension SalaryEditorFeature: SwiftRexArchitecture.Feature {}

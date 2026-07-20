@@ -7,7 +7,7 @@ import SwiftRexArchitecture
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
-@Feature(type: .moduleEntryPoint, strategy: .observationSimple)
+@Feature(strategy: .observationSimple)
 public enum ReportResultFeature {
 
     // MARK: - State
@@ -294,6 +294,3 @@ private let buildViewState: @MainActor @Sendable (ReportResultFeature.State) -> 
         isPreviewPresented: state.pdfData != nil
     )
 }
-
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension ReportResultFeature: SwiftRexArchitecture.Feature {}

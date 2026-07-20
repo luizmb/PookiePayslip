@@ -29,7 +29,7 @@ public extension AppRoute {
     @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
     @MainActor
     private static func root(store: MainStoreType, world: World, entry: AppRoute) -> some View {
-        AppRootView(path: store.path(\.navigation.path, set: { AppAction.navigation(.setPath($0)) })) {
+        AppRootView(path: store.binding(.state(\.navigation.path), dispatch: .action(review: { AppAction.navigation(.setPath($0)) }))) {
             entry.view(in: store, world: world)
                 .navigationDestination(for: AppRoute.self) { route in
                     route.view(in: store, world: world)
@@ -42,12 +42,12 @@ public extension AppRoute {
     @MainActor @ViewBuilder
     func view(in store: MainStoreType, world: World) -> some View {
         switch self {
-        case .calendar:     LiftedScope<CalendarFeature>.calendar.view(from: store, world: world)
-        case .dayDetail:    LiftedScope<DayDetailFeature>.dayDetail.view(from: store, world: world)
-        case .reportInput:  LiftedScope<ReportInputFeature>.reportInput.view(from: store, world: world)
-        case .reportResult: LiftedScope<ReportResultFeature>.reportResult.view(from: store, world: world)
-        case .salaryEditor: LiftedScope<SalaryEditorFeature>.salaryEditor.view(from: store, world: world)
-        case .settings:     LiftedScope<SettingsFeature>.settings.view(from: store, world: world)
+        case .calendar:     AppScopes.calendar.view(of: CalendarFeature.self, from: store, world: world)
+        case .dayDetail:    AppScopes.dayDetail.view(of: DayDetailFeature.self, from: store, world: world)
+        case .reportInput:  AppScopes.reportInput.view(of: ReportInputFeature.self, from: store, world: world)
+        case .reportResult: AppScopes.reportResult.view(of: ReportResultFeature.self, from: store, world: world)
+        case .salaryEditor: AppScopes.salaryEditor.view(of: SalaryEditorFeature.self, from: store, world: world)
+        case .settings:     AppScopes.settings.view(of: SettingsFeature.self, from: store, world: world)
         }
     }
 }
