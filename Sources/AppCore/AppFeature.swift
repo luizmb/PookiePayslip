@@ -75,7 +75,7 @@ public extension MainStore {
 
 private extension MainStore {
     static func behavior() -> Behavior<AppAction, AppState, World> {
-        NavigationFeature.behavior().lift(Relay.Empty.action(AppAction.prism.navigation).state(\AppState.navigation).environment { _ in () })
+        NavigationFeature.behavior().lift(.action(\.navigation).state(\.navigation).environment(ignore))
         <> AppScopes.calendar.behavior(of: CalendarFeature.self)
         <> AppScopes.dayDetail.behavior(of: DayDetailFeature.self)
         <> AppScopes.reportInput.behavior(of: ReportInputFeature.self)
