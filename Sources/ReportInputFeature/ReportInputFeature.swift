@@ -8,7 +8,7 @@ import SwiftRexArchitecture
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
-@Feature(type: .moduleEntryPoint, strategy: .observationSimple)
+@Feature(strategy: .observationSimple)
 public enum ReportInputFeature {
 
     // MARK: - State
@@ -389,6 +389,3 @@ private func fmtHours(_ h: Double) -> String {
     if rounded.truncatingRemainder(dividingBy: 1) == 0 { return "\(Int(rounded))" }
     return "\(rounded)"
 }
-
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension ReportInputFeature: SwiftRexArchitecture.Feature {}

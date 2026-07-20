@@ -58,7 +58,6 @@ public enum AppAction: Sendable {
 
 public typealias MainStoreType = any StoreType<AppAction, AppState>
 public typealias MainStore = Store<AppAction, AppState, World>
-public typealias LiftedScope<F: Feature> = Scope<AppAction, AppState, World, F>
 
 // MARK: - Store factory
 
@@ -76,13 +75,13 @@ public extension MainStore {
 
 private extension MainStore {
     static func behavior() -> Behavior<AppAction, AppState, World> {
-        NavigationFeature.behavior().lift(action: \.navigation, state: \.navigation, environment: { _ in () })
-        <> LiftedScope<CalendarFeature>.calendar.behavior
-        <> LiftedScope<DayDetailFeature>.dayDetail.behavior
-        <> LiftedScope<ReportInputFeature>.reportInput.behavior
-        <> LiftedScope<ReportResultFeature>.reportResult.behavior
-        <> LiftedScope<SalaryEditorFeature>.salaryEditor.behavior
-        <> LiftedScope<SettingsFeature>.settings.behavior
+        NavigationFeature.behavior().lift(Relay.Empty.action(AppAction.prism.navigation).state(\AppState.navigation).environment { _ in () })
+        <> AppScopes.calendar.behavior(of: CalendarFeature.self)
+        <> AppScopes.dayDetail.behavior(of: DayDetailFeature.self)
+        <> AppScopes.reportInput.behavior(of: ReportInputFeature.self)
+        <> AppScopes.reportResult.behavior(of: ReportResultFeature.self)
+        <> AppScopes.salaryEditor.behavior(of: SalaryEditorFeature.self)
+        <> AppScopes.settings.behavior(of: SettingsFeature.self)
         <> bridgeBehavior()
     }
 }
@@ -100,8 +99,8 @@ private func bridgeBehavior() -> Behavior<AppAction, AppState, World> {
     Behavior<AppAction, AppState, World>.identity
 
     // Calendar salary chip tapped → seed month date in editor + push nav
-        .on(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSalaryEditor,
-            dispatch: const(.navigation(.push(.salaryEditor))),
+        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSalaryEditor),
+            dispatch: .action(review: const(.navigation(.push(.salaryEditor)))),
             reduce: { _, state in
                 state.salaryEditor.amount      = state.calendar.salary?.amount      ?? 0
                 state.salaryEditor.periodicity = state.calendar.salary?.periodicity ?? .hourly
@@ -112,62 +111,62 @@ private func bridgeBehavior() -> Behavior<AppAction, AppState, World> {
             })
 
     // Salary saved → update calendar + pop
-        .on(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved,
-            dispatch: { salary in .calendar(.salaryUpdated(salary)) })
-        .on(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved,
-            dispatch: const(.navigation(.pop)))
+        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved),
+            dispatch: .action(review: { salary in .calendar(.salaryUpdated(salary)) }))
+        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.saved),
+            dispatch: .action(review: const(.navigation(.pop))))
 
     // Salary back → pop
-        .on(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.back,
-            dispatch: const(.navigation(.pop)))
+        .on(.action(AppAction.prism.salaryEditor >>> SalaryEditorFeature.Action.prism.back),
+            dispatch: .action(review: const(.navigation(.pop))))
 
     // Settings gear tapped → push settings
-        .on(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSettings,
-            dispatch: const(.navigation(.push(.settings))))
+        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openSettings),
+            dispatch: .action(review: const(.navigation(.push(.settings)))))
 
     // Settings saved / back → pop
-        .on(AppAction.prism.settings >>> SettingsFeature.Action.prism.saved,
-            dispatch: const(.navigation(.pop)))
-        .on(AppAction.prism.settings >>> SettingsFeature.Action.prism.back,
-            dispatch: const(.navigation(.pop)))
+        .on(.action(AppAction.prism.settings >>> SettingsFeature.Action.prism.saved),
+            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(AppAction.prism.settings >>> SettingsFeature.Action.prism.back),
+            dispatch: .action(review: const(.navigation(.pop))))
 
     // selectDay: push nav to dayDetail, seed dayDetail.date for the onAppear load
-        .on(AppAction.prism.calendar >>> CalendarFeature.Action.prism.selectDay,
-            dispatch: { date in .navigation(.push(.dayDetail(date))) },
+        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.selectDay),
+            dispatch: .action(review: { date in .navigation(.push(.dayDetail(date))) }),
             reduce:   { date, state in state.dayDetail.date = date })
 
     // openReport: push nav to reportInput
-        .on(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openReport,
-            dispatch: const(.navigation(.push(.reportInput))))
+        .on(.action(AppAction.prism.calendar >>> CalendarFeature.Action.prism.openReport),
+            dispatch: .action(review: const(.navigation(.push(.reportInput)))))
 
     // dayLoaded: keep navigation path in sync (covers prevDay, nextDay, and initial load)
-        .on(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.dayLoaded,
-            dispatch: { args in .navigation(.replaceLast(.dayDetail(args.0.date))) })
+        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.dayLoaded),
+            dispatch: .action(review: { args in .navigation(.replaceLast(.dayDetail(args.0.date))) }))
 
     // saveCompleted: route saved record to CalendarFeature cache
-        .on(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.saveCompleted,
-            dispatch: { record in .calendar(.recordUpdated(record)) })
+        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.saveCompleted),
+            dispatch: .action(review: { record in .calendar(.recordUpdated(record)) }))
 
     // done: pop navigation
-        .on(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.done,
-            dispatch: const(.navigation(.pop)))
+        .on(.action(AppAction.prism.dayDetail >>> DayDetailFeature.Action.prism.done),
+            dispatch: .action(review: const(.navigation(.pop))))
 
     // reportGenerated: push nav to reportResult
-        .on(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated,
-            dispatch: const(.navigation(.push(.reportResult))))
+        .on(.action(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated),
+            dispatch: .action(review: const(.navigation(.push(.reportResult)))))
 
     // reportGenerated: route to ReportResultFeature so it seeds its own state (including records for PDF)
-        .on(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated,
-            dispatch: { args in
+        .on(.action(AppAction.prism.reportInput >>> ReportInputFeature.Action.prism.reportGenerated),
+            dispatch: .action(review: { args in
                 let (report, records, from, to) = args
                 return .reportResult(.loaded(report, records, from: from, to: to))
-            })
+            }))
 
     // back: pop nav
-        .on(AppAction.prism.reportInput  >>> ReportInputFeature.Action.prism.back,
-            dispatch: const(.navigation(.pop)))
-        .on(AppAction.prism.reportResult >>> ReportResultFeature.Action.prism.back,
-            dispatch: const(.navigation(.pop)))
+        .on(.action(AppAction.prism.reportInput  >>> ReportInputFeature.Action.prism.back),
+            dispatch: .action(review: const(.navigation(.pop))))
+        .on(.action(AppAction.prism.reportResult >>> ReportResultFeature.Action.prism.back),
+            dispatch: .action(review: const(.navigation(.pop))))
 }
 
 private extension Store<AppAction, AppState, World> {
@@ -191,119 +190,79 @@ private extension Store<AppAction, AppState, World> {
 
 // MARK: - Feature scopes
 
-public extension LiftedScope<CalendarFeature> {
-    static var calendar: Self {
-        Scope(
-            CalendarFeature.self,
-            action: \.calendar,
-            state: \.calendar,
-            environment: { world in
-                        CalendarFeature.Environment(
-                            decoder:     world.decoder,
-                            readFile:    world.readFile,
-                            currentDate: world.currentDate,
-                            calendar:    world.calendar,
-                            formatDate:  world.formatDate,
-                            formatMoney: world.formatMoney
-                        )
-                    }
-        )
-    }
-}
+public enum AppScopes {
+    public static let calendar = Relay.Empty
+        .action(AppAction.prism.calendar).state(\AppState.calendar)
+        .environment { (world: World) in
+            CalendarFeature.Environment(
+                decoder:     world.decoder,
+                readFile:    world.readFile,
+                currentDate: world.currentDate,
+                calendar:    world.calendar,
+                formatDate:  world.formatDate,
+                formatMoney: world.formatMoney
+            )
+        }
 
-public extension LiftedScope<DayDetailFeature> {
-    static var dayDetail: Self {
-        Scope(
-            DayDetailFeature.self,
-            action: \.dayDetail,
-            state: \.dayDetail,
-            environment: { world in
-                        DayDetailFeature.Environment(
-                            decoder:     world.decoder,
-                            encoder:     world.encoder,
-                            readFile:    world.readFile,
-                            saveFile:    world.saveFile,
-                            currentDate: world.currentDate,
-                            newID:       world.newID,
-                            calendar:    world.calendar,
-                            dayBefore:   world.dayBefore,
-                            dayAfter:    world.dayAfter,
-                            loadSettings: world.loadSettings,
-                            formatDate:  world.formatDate
-                        )
-                    }
-        )
-    }
-}
+    public static let dayDetail = Relay.Empty
+        .action(AppAction.prism.dayDetail).state(\AppState.dayDetail)
+        .environment { (world: World) in
+            DayDetailFeature.Environment(
+                decoder:     world.decoder,
+                encoder:     world.encoder,
+                readFile:    world.readFile,
+                saveFile:    world.saveFile,
+                currentDate: world.currentDate,
+                newID:       world.newID,
+                calendar:    world.calendar,
+                dayBefore:   world.dayBefore,
+                dayAfter:    world.dayAfter,
+                loadSettings: world.loadSettings,
+                formatDate:  world.formatDate
+            )
+        }
 
-public extension LiftedScope<ReportInputFeature> {
-    static var reportInput: Self {
-        Scope(
-            ReportInputFeature.self,
-            action: \.reportInput,
-            state: \.reportInput,
-            environment: { world in
-                        ReportInputFeature.Environment(
-                            decoder:     world.decoder,
-                            readFile:    world.readFile,
-                            currentDate: world.currentDate,
-                            calendar:    world.calendar,
-                            calcTax:     world.calcTax
-                        )
-                    }
-        )
-    }
-}
+    public static let reportInput = Relay.Empty
+        .action(AppAction.prism.reportInput).state(\AppState.reportInput)
+        .environment { (world: World) in
+            ReportInputFeature.Environment(
+                decoder:     world.decoder,
+                readFile:    world.readFile,
+                currentDate: world.currentDate,
+                calendar:    world.calendar,
+                calcTax:     world.calcTax
+            )
+        }
 
-public extension LiftedScope<ReportResultFeature> {
-    static var reportResult: Self {
-        Scope(
-            ReportResultFeature.self,
-            action: \.reportResult,
-            state: \.reportResult,
-            environment: { world in
-                        ReportResultFeature.Environment(
-                            renderPDF: { r, recs in world.renderPDF(r, recs) },
-                            formatDate: world.formatDate,
-                            formatMoney: world.formatMoney
-                        )
-                    }
-        )
-    }
-}
+    public static let reportResult = Relay.Empty
+        .action(AppAction.prism.reportResult).state(\AppState.reportResult)
+        .environment { (world: World) in
+            ReportResultFeature.Environment(
+                renderPDF: { r, recs in world.renderPDF(r, recs) },
+                formatDate: world.formatDate,
+                formatMoney: world.formatMoney
+            )
+        }
 
-public extension LiftedScope<SalaryEditorFeature> {
-    static var salaryEditor: Self {
-        Scope(
-            SalaryEditorFeature.self,
-            action: \.salaryEditor,
-            state: \.salaryEditor,
-            environment: { world in
-                        SalaryEditorFeature.Environment(
-                            decoder:  world.decoder,
-                            encoder:  world.encoder,
-                            readFile: world.readFile,
-                            saveFile: world.saveFile,
-                            calendar: world.calendar
-                        )
-                    }
-        )
-    }
-}
+    public static let salaryEditor = Relay.Empty
+        .action(AppAction.prism.salaryEditor).state(\AppState.salaryEditor)
+        .environment { (world: World) in
+            SalaryEditorFeature.Environment(
+                decoder:  world.decoder,
+                encoder:  world.encoder,
+                readFile: world.readFile,
+                saveFile: world.saveFile,
+                calendar: world.calendar
+            )
+        }
 
-public extension LiftedScope<SettingsFeature> {
-    static var settings: Self {
-        Scope(
-            SettingsFeature.self,
-            action: \.settings,
-            state: \.settings,
-            environment: { world in
-                        SettingsFeature.Environment(
-                            loadSettings: world.loadSettings,
-                            saveSettings: world.saveSettings,
-                            exportDatabase: world.exportDatabase
-                        )
-                    }
-        )
-    }
+    public static let settings = Relay.Empty
+        .action(AppAction.prism.settings).state(\AppState.settings)
+        .environment { (world: World) in
+            SettingsFeature.Environment(
+                loadSettings: world.loadSettings,
+                saveSettings: world.saveSettings,
+                exportDatabase: world.exportDatabase
+            )
+        }
 }
