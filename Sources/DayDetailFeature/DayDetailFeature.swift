@@ -13,7 +13,7 @@ import SwiftRexReactiveConcurrency
 let defaultBreakStart = TimeOfDay(hour: 12, minute: 30)
 let defaultBreakMinutes = 30
 
-@Feature(type: .moduleEntryPoint, strategy: .observationSimple)
+@Feature(strategy: .observationSimple)
 public enum DayDetailFeature {
 
     // MARK: - State
@@ -485,6 +485,3 @@ private extension DayDetailFeature.ViewAction {
         }
     }
 }
-
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension DayDetailFeature: SwiftRexArchitecture.Feature {}

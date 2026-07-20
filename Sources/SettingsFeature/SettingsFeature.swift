@@ -7,7 +7,7 @@ import SwiftUI
 import SwiftRex
 import SwiftRexArchitecture
 
-@Feature(type: .moduleEntryPoint, strategy: .observationSimple)
+@Feature(strategy: .observationSimple)
 public enum SettingsFeature {
 
     // MARK: - State
@@ -207,6 +207,3 @@ func durationLabel(_ minutes: Int) -> String {
     if h == 0 { return "\(m) min" }
     return m == 0 ? "\(h)h" : "\(h)h \(m)m"
 }
-
-@available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
-extension SettingsFeature: SwiftRexArchitecture.Feature {}
