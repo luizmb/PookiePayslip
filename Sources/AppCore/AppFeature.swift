@@ -194,6 +194,11 @@ public enum AppScopes: Rig {
     // Total-state scope shape pinned to the app triad (duplex `Prism` / total `ReadsWrites` / `Narrows`).
     // Annotating a scope `Global<_,_,_>` roots the bare optics, so each declares as
     // `.action(\.x).state(\.x).environment(…)` with no explicit witnesses.
+    //
+    // Multi-property environments narrow point-free via `fanout(keypaths: …, into: Env.init)` — EXCEPT
+    // the scopes whose `Environment` takes an existential (`any DataDecoderFactory & Sendable`) argument:
+    // routing an existential through the variadic `fanout` parameter pack currently crashes the Swift
+    // compiler (emit-module SIGSEGV), so calendar/dayDetail/reportInput/salaryEditor stay closures.
     public typealias Global<A, S, E> = Relay.Scope<
         Relay.ActionAxis.Prism<Action, A>,
         Relay.StateAxis.ReadsWrites<State, S>,
@@ -204,12 +209,8 @@ public enum AppScopes: Rig {
         .action(\.calendar).state(\.calendar)
         .environment { (world: World) in
             CalendarFeature.Environment(
-                decoder:     world.decoder,
-                readFile:    world.readFile,
-                currentDate: world.currentDate,
-                calendar:    world.calendar,
-                formatDate:  world.formatDate,
-                formatMoney: world.formatMoney
+                decoder: world.decoder, readFile: world.readFile, currentDate: world.currentDate,
+                calendar: world.calendar, formatDate: world.formatDate, formatMoney: world.formatMoney
             )
         }
 
@@ -217,17 +218,10 @@ public enum AppScopes: Rig {
         .action(\.dayDetail).state(\.dayDetail)
         .environment { (world: World) in
             DayDetailFeature.Environment(
-                decoder:     world.decoder,
-                encoder:     world.encoder,
-                readFile:    world.readFile,
-                saveFile:    world.saveFile,
-                currentDate: world.currentDate,
-                newID:       world.newID,
-                calendar:    world.calendar,
-                dayBefore:   world.dayBefore,
-                dayAfter:    world.dayAfter,
-                loadSettings: world.loadSettings,
-                formatDate:  world.formatDate
+                decoder: world.decoder, encoder: world.encoder, readFile: world.readFile, saveFile: world.saveFile,
+                currentDate: world.currentDate, newID: world.newID, calendar: world.calendar,
+                dayBefore: world.dayBefore, dayAfter: world.dayAfter, loadSettings: world.loadSettings,
+                formatDate: world.formatDate
             )
         }
 
@@ -235,43 +229,31 @@ public enum AppScopes: Rig {
         .action(\.reportInput).state(\.reportInput)
         .environment { (world: World) in
             ReportInputFeature.Environment(
-                decoder:     world.decoder,
-                readFile:    world.readFile,
-                currentDate: world.currentDate,
-                calendar:    world.calendar,
-                calcTax:     world.calcTax
+                decoder: world.decoder, readFile: world.readFile, currentDate: world.currentDate,
+                calendar: world.calendar, calcTax: world.calcTax
             )
         }
 
     public static let reportResult: Global<_, _, _> =
         .action(\.reportResult).state(\.reportResult)
-        .environment { (world: World) in
-            ReportResultFeature.Environment(
-                renderPDF: { r, recs in world.renderPDF(r, recs) },
-                formatDate: world.formatDate,
-                formatMoney: world.formatMoney
-            )
-        }
+        .environment(fanout(
+            keypaths: \.renderPDF, \.formatDate, \.formatMoney,
+            into: ReportResultFeature.Environment.init
+        ))
 
     public static let salaryEditor: Global<_, _, _> =
         .action(\.salaryEditor).state(\.salaryEditor)
         .environment { (world: World) in
             SalaryEditorFeature.Environment(
-                decoder:  world.decoder,
-                encoder:  world.encoder,
-                readFile: world.readFile,
-                saveFile: world.saveFile,
-                calendar: world.calendar
+                decoder: world.decoder, encoder: world.encoder, readFile: world.readFile,
+                saveFile: world.saveFile, calendar: world.calendar
             )
         }
 
     public static let settings: Global<_, _, _> =
         .action(\.settings).state(\.settings)
-        .environment { (world: World) in
-            SettingsFeature.Environment(
-                loadSettings: world.loadSettings,
-                saveSettings: world.saveSettings,
-                exportDatabase: world.exportDatabase
-            )
-        }
+        .environment(fanout(
+            keypaths: \.loadSettings, \.saveSettings, \.exportDatabase,
+            into: SettingsFeature.Environment.init
+        ))
 }
