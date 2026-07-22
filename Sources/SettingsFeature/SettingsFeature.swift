@@ -6,13 +6,14 @@ import SwiftRexReactiveConcurrency
 import SwiftUI
 import SwiftRex
 import SwiftRexArchitecture
+import FPMacros
 
 @Feature(strategy: .observationSimple)
 public enum SettingsFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         public var defaultStartTime: TimeOfDay
         public var defaultEndTime: TimeOfDay
         public var defaultBreakMinutes: Int
@@ -83,6 +84,7 @@ public enum SettingsFeature {
             public var exportShareable: ZipShareable?   // non-nil once the zip is ready to share
         }
 
+        @Prisms
         public enum ViewAction: Sendable {
             case setStart(TimeOfDay)
             case setEnd(TimeOfDay)
