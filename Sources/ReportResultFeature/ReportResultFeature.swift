@@ -12,7 +12,7 @@ public enum ReportResultFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         public var report: PayReport?           // source of truth for all figures below
         public var records: [WorkDayRecord]     // individual days for PDF breakdown page
         public var fromDate: Date?

@@ -20,7 +20,7 @@ import SwiftRexReactiveConcurrency
 // MARK: - AppState
 
 @Lenses
-public struct AppState: Sendable, Codable {
+public struct AppState: Sendable {
     public var navigation:   NavigationFeature.State
     public var calendar:     CalendarFeature.State
     public var dayDetail:    DayDetailFeature.State
@@ -187,7 +187,7 @@ private extension Store<AppAction, AppState, World> {
 // MARK: - Feature scopes
 
 public enum AppScopes {
-    public static let calendar = Relay.Empty
+    public static let calendar = Relay.Scope.identity
         .action(AppAction.prism.calendar).state(\AppState.calendar)
         .environment { (world: World) in
             CalendarFeature.Environment(
@@ -200,7 +200,7 @@ public enum AppScopes {
             )
         }
 
-    public static let dayDetail = Relay.Empty
+    public static let dayDetail = Relay.Scope.identity
         .action(AppAction.prism.dayDetail).state(\AppState.dayDetail)
         .environment { (world: World) in
             DayDetailFeature.Environment(
@@ -218,7 +218,7 @@ public enum AppScopes {
             )
         }
 
-    public static let reportInput = Relay.Empty
+    public static let reportInput = Relay.Scope.identity
         .action(AppAction.prism.reportInput).state(\AppState.reportInput)
         .environment { (world: World) in
             ReportInputFeature.Environment(
@@ -230,7 +230,7 @@ public enum AppScopes {
             )
         }
 
-    public static let reportResult = Relay.Empty
+    public static let reportResult = Relay.Scope.identity
         .action(AppAction.prism.reportResult).state(\AppState.reportResult)
         .environment { (world: World) in
             ReportResultFeature.Environment(
@@ -240,7 +240,7 @@ public enum AppScopes {
             )
         }
 
-    public static let salaryEditor = Relay.Empty
+    public static let salaryEditor = Relay.Scope.identity
         .action(AppAction.prism.salaryEditor).state(\AppState.salaryEditor)
         .environment { (world: World) in
             SalaryEditorFeature.Environment(
@@ -252,7 +252,7 @@ public enum AppScopes {
             )
         }
 
-    public static let settings = Relay.Empty
+    public static let settings = Relay.Scope.identity
         .action(AppAction.prism.settings).state(\AppState.settings)
         .environment { (world: World) in
             SettingsFeature.Environment(

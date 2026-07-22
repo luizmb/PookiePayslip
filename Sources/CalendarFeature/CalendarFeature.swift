@@ -13,7 +13,7 @@ public enum CalendarFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         // Source of truth — only these change via Actions:
         public var currentMonth: Date?      // nil until first load; the viewed month
         public var today: Date?             // nil until loaded; drives the "today" highlight

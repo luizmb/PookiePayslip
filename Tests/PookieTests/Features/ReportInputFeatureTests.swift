@@ -32,8 +32,7 @@ struct ReportInputFeatureBehaviorTests {
         s.receive(ReportInputFeature.Action.prism.started) { args, state in
             let (today, monthStart, _, warning) = args
             state.today = today
-            state.fromDate = monthStart
-            state.toDate = today
+            state.range = ReportInputFeature.DateRange(from: monthStart, to: today)
             state.noSalaryWarning = warning
         }
 
@@ -42,8 +41,7 @@ struct ReportInputFeatureBehaviorTests {
 
     @Test func startDoesNotOverrideAlreadySetDates() async {
         var initial = ReportInputFeature.initialState(with: ())
-        initial.fromDate = Fixture.twoDaysAgo
-        initial.toDate   = Fixture.today
+        initial.range = ReportInputFeature.DateRange(from: Fixture.twoDaysAgo, to: Fixture.today)
         let s = store(initial: initial, env: .mock(currentDate: { Fixture.today }))
 
         s.dispatch(.start) { _ in }
@@ -55,8 +53,8 @@ struct ReportInputFeatureBehaviorTests {
             // fromDate/toDate already set → remain unchanged
         }
 
-        #expect(s.state.fromDate == Fixture.twoDaysAgo)
-        #expect(s.state.toDate == Fixture.today)
+        #expect(s.state.range?.from == Fixture.twoDaysAgo)
+        #expect(s.state.range?.to == Fixture.today)
     }
 
     // Regression: on re-entry, salary must load from the report's START month (the kept fromDate),
@@ -76,8 +74,7 @@ struct ReportInputFeatureBehaviorTests {
             calcTax: { gross, _, _ in TaxBreakdown(ni: 0, pension: 0, incomeTax: 0, studentLoan: 0, net: gross) }
         )
         var initial = ReportInputFeature.initialState(with: ())
-        initial.fromDate = june1
-        initial.toDate = june30
+        initial.range = ReportInputFeature.DateRange(from: june1, to: june30)
 
         let s = store(initial: initial, env: env)
         s.dispatch(.start) { _ in }
@@ -118,8 +115,7 @@ struct ReportInputFeatureBehaviorTests {
         s.receive(ReportInputFeature.Action.prism.started) { args, state in
             let (today, monthStart, salary, warning) = args
             state.today = today
-            state.fromDate = monthStart
-            state.toDate = today
+            state.range = ReportInputFeature.DateRange(from: monthStart, to: today)
             state.salary = salary
             state.noSalaryWarning = warning
         }
@@ -130,9 +126,11 @@ struct ReportInputFeatureBehaviorTests {
     // MARK: - setFrom / setTo
 
     @Test func setFromUpdateFromDate() async {
-        let s = store()
+        var initial = ReportInputFeature.initialState(with: ())
+        initial.range = ReportInputFeature.DateRange(from: Fixture.today, to: Fixture.today)  // the picker only edits a resolved range
+        let s = store(initial: initial)
         s.dispatch(.setFrom(Fixture.twoDaysAgo)) { state in
-            state.fromDate = Fixture.twoDaysAgo
+            state.range?.from = Fixture.twoDaysAgo
         }
         // setFrom fires a salary-only reload — it must NOT touch `today` (bug 2 regression guard).
         await s.runEffects()
@@ -143,20 +141,22 @@ struct ReportInputFeatureBehaviorTests {
     }
 
     @Test func setToUpdateToDate() {
-        let s = store()
+        var initial = ReportInputFeature.initialState(with: ())
+        initial.range = ReportInputFeature.DateRange(from: Fixture.today, to: Fixture.today)
+        let s = store(initial: initial)
         s.dispatch(.setTo(Fixture.yesterday)) { state in
-            state.toDate = Fixture.yesterday
+            state.range?.to = Fixture.yesterday
         }
     }
 
     @Test func setToFutureDateClearsEstimateToggle() {
         var initial = ReportInputFeature.initialState(with: ())
-        initial.toDate = Fixture.today
+        initial.range = ReportInputFeature.DateRange(from: Fixture.today, to: Fixture.today)
         initial.today = Fixture.today
         initial.estimateFuture = true
         let s = store(initial: initial)
         s.dispatch(.setTo(Fixture.yesterday)) { state in
-            state.toDate = Fixture.yesterday
+            state.range?.to = Fixture.yesterday
             state.estimateFuture = false
         }
     }
@@ -166,7 +166,7 @@ struct ReportInputFeatureBehaviorTests {
     @Test func toggleEstimateFlipsFlag() {
         var initial = ReportInputFeature.initialState(with: ())
         initial.today = Fixture.today
-        initial.toDate = Fixture.tomorrow   // future → toggle is visible
+        initial.range = ReportInputFeature.DateRange(from: Fixture.today, to: Fixture.tomorrow)   // future → toggle is visible
         let s = store(initial: initial)
         s.dispatch(.toggleEstimate) { state in
             state.estimateFuture = true
@@ -181,8 +181,7 @@ struct ReportInputFeatureBehaviorTests {
     @Test func generateWithPastRecordsProducesReport() async {
         let record = Fixture.completedDay
         var initial = ReportInputFeature.initialState(with: ())
-        initial.fromDate = Fixture.todayMidnight
-        initial.toDate = Fixture.todayMidnight
+        initial.range = ReportInputFeature.DateRange(from: Fixture.todayMidnight, to: Fixture.todayMidnight)
         initial.salary = SalaryRecord(amount: 11, periodicity: .hourly)
         initial.today = Fixture.today
 
@@ -204,8 +203,7 @@ struct ReportInputFeatureBehaviorTests {
 
     @Test func generateWithNoRecordsProducesZeroHoursReport() async {
         var initial = ReportInputFeature.initialState(with: ())
-        initial.fromDate = Fixture.twoDaysAgo
-        initial.toDate = Fixture.yesterday
+        initial.range = ReportInputFeature.DateRange(from: Fixture.twoDaysAgo, to: Fixture.yesterday)
         initial.salary = SalaryRecord(amount: 11, periodicity: .hourly)
         initial.today = Fixture.today
 
@@ -235,8 +233,7 @@ struct ReportInputFeatureMapStateTests {
 
     @Test func canGenerateTrueWhenValidInputs() {
         var state = ReportInputFeature.initialState(with: ())
-        state.fromDate = Fixture.twoDaysAgo
-        state.toDate = Fixture.today
+        state.range = ReportInputFeature.DateRange(from: Fixture.twoDaysAgo, to: Fixture.today)
         state.salary = SalaryRecord(amount: 11, periodicity: .hourly)
         state.today = Fixture.today
         let vs = ReportInputFeature.mapState(.mock())(state)
@@ -246,7 +243,7 @@ struct ReportInputFeatureMapStateTests {
     @Test func showEstimateToggleWhenToDateIsFuture() {
         var state = ReportInputFeature.initialState(with: ())
         state.today = Fixture.today
-        state.toDate = Fixture.tomorrow
+        state.range = ReportInputFeature.DateRange(from: Fixture.tomorrow, to: Fixture.tomorrow)
         let vs = ReportInputFeature.mapState(.mock())(state)
         #expect(vs.showEstimateToggle)
     }
@@ -254,7 +251,7 @@ struct ReportInputFeatureMapStateTests {
     @Test func hideEstimateToggleForPastPeriods() {
         var state = ReportInputFeature.initialState(with: ())
         state.today = Fixture.today
-        state.toDate = Fixture.yesterday
+        state.range = ReportInputFeature.DateRange(from: Fixture.yesterday, to: Fixture.yesterday)
         let vs = ReportInputFeature.mapState(.mock())(state)
         #expect(!vs.showEstimateToggle)
     }
@@ -273,7 +270,7 @@ struct ReportInputFeatureMapStateTests {
         state.weekdayAvgHours = 8.0
         state.weekendAvgHours = 6.0
         state.today = Fixture.today
-        state.toDate = Fixture.tomorrow
+        state.range = ReportInputFeature.DateRange(from: Fixture.tomorrow, to: Fixture.tomorrow)
         let vs = ReportInputFeature.mapState(.mock())(state)
         #expect(vs.estimateDescriptionLabel.contains("8"))
         #expect(vs.estimateDescriptionLabel.contains("6"))
@@ -322,8 +319,7 @@ struct ReportInputFeatureSnapshotTests {
 
     private func baseState() -> ReportInputFeature.State {
         var s = ReportInputFeature.initialState(with: ())
-        s.fromDate = Fixture.calendar.date(from: DateComponents(year: 2026, month: 5, day: 1))!
-        s.toDate = Fixture.todayMidnight
+        s.range = ReportInputFeature.DateRange(from: Fixture.calendar.date(from: DateComponents(year: 2026, month: 5, day: 1))!, to: Fixture.todayMidnight)
         s.salary = SalaryRecord(amount: 11, periodicity: .hourly)
         s.today = Fixture.today
         return s
@@ -335,13 +331,13 @@ struct ReportInputFeatureSnapshotTests {
 
     @Test func snapshotEstimateToggleVisible() async {
         var s = baseState()
-        s.toDate = Fixture.tomorrow
+        s.range?.to = Fixture.tomorrow
         await snap(feature(state: s), named: "reportinput-estimate-toggle-visible")
     }
 
     @Test func snapshotEstimateToggleChecked() async {
         var s = baseState()
-        s.toDate = Fixture.tomorrow
+        s.range?.to = Fixture.tomorrow
         s.estimateFuture = true
         s.weekdayAvgHours = 8.0
         s.weekendAvgHours = 4.0

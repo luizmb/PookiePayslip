@@ -7,8 +7,8 @@ import SwiftUI
 public struct SettingsView: View {
     public var body: some View {
         SettingsContent(
-            startTime:         Binding(get: { viewStore.state.startTime }, set: { viewStore.dispatch(.setStart($0)) }),
-            endTime:           Binding(get: { viewStore.state.endTime },   set: { viewStore.dispatch(.setEnd($0)) }),
+            startTime:         viewStore.binding(.state(\.startTime), dispatch: .action(\.setStart)),
+            endTime:           viewStore.binding(.state(\.endTime), dispatch: .action(\.setEnd)),
             breakMinutes:      viewStore.state.breakMinutes,
             breakLabel:        viewStore.state.breakLabel,
             breakOptions:      viewStore.state.breakOptions,
