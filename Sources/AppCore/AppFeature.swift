@@ -186,9 +186,22 @@ private extension Store<AppAction, AppState, World> {
 
 // MARK: - Feature scopes
 
-public enum AppScopes {
-    public static let calendar = Relay.Scope.identity
-        .action(AppAction.prism.calendar).state(\AppState.calendar)
+public enum AppScopes: Rig {
+    public typealias Action = AppAction
+    public typealias State = AppState
+    public typealias Environment = World
+
+    // Total-state scope shape pinned to the app triad (duplex `Prism` / total `ReadsWrites` / `Narrows`).
+    // Annotating a scope `Global<_,_,_>` roots the bare optics, so each declares as
+    // `.action(\.x).state(\.x).environment(…)` with no explicit witnesses.
+    public typealias Global<A, S, E> = Relay.Scope<
+        Relay.ActionAxis.Prism<Action, A>,
+        Relay.StateAxis.ReadsWrites<State, S>,
+        Relay.EnvironmentAxis.Narrows<Environment, E>
+    >
+
+    public static let calendar: Global<_, _, _> =
+        .action(\.calendar).state(\.calendar)
         .environment { (world: World) in
             CalendarFeature.Environment(
                 decoder:     world.decoder,
@@ -200,8 +213,8 @@ public enum AppScopes {
             )
         }
 
-    public static let dayDetail = Relay.Scope.identity
-        .action(AppAction.prism.dayDetail).state(\AppState.dayDetail)
+    public static let dayDetail: Global<_, _, _> =
+        .action(\.dayDetail).state(\.dayDetail)
         .environment { (world: World) in
             DayDetailFeature.Environment(
                 decoder:     world.decoder,
@@ -218,8 +231,8 @@ public enum AppScopes {
             )
         }
 
-    public static let reportInput = Relay.Scope.identity
-        .action(AppAction.prism.reportInput).state(\AppState.reportInput)
+    public static let reportInput: Global<_, _, _> =
+        .action(\.reportInput).state(\.reportInput)
         .environment { (world: World) in
             ReportInputFeature.Environment(
                 decoder:     world.decoder,
@@ -230,8 +243,8 @@ public enum AppScopes {
             )
         }
 
-    public static let reportResult = Relay.Scope.identity
-        .action(AppAction.prism.reportResult).state(\AppState.reportResult)
+    public static let reportResult: Global<_, _, _> =
+        .action(\.reportResult).state(\.reportResult)
         .environment { (world: World) in
             ReportResultFeature.Environment(
                 renderPDF: { r, recs in world.renderPDF(r, recs) },
@@ -240,8 +253,8 @@ public enum AppScopes {
             )
         }
 
-    public static let salaryEditor = Relay.Scope.identity
-        .action(AppAction.prism.salaryEditor).state(\AppState.salaryEditor)
+    public static let salaryEditor: Global<_, _, _> =
+        .action(\.salaryEditor).state(\.salaryEditor)
         .environment { (world: World) in
             SalaryEditorFeature.Environment(
                 decoder:  world.decoder,
@@ -252,8 +265,8 @@ public enum AppScopes {
             )
         }
 
-    public static let settings = Relay.Scope.identity
-        .action(AppAction.prism.settings).state(\AppState.settings)
+    public static let settings: Global<_, _, _> =
+        .action(\.settings).state(\.settings)
         .environment { (world: World) in
             SettingsFeature.Environment(
                 loadSettings: world.loadSettings,
