@@ -191,28 +191,22 @@ public enum AppScopes: Rig {
     public typealias State = AppState
     public typealias Environment = World
 
-    // Total-state scope shape pinned to the app triad (duplex `Prism` / total `ReadsWrites` / `Narrows`).
-    // Annotating a scope `Global<_,_,_>` roots the bare optics, so each declares as
-    // `.action(\.x).state(\.x).environment(…)` with no explicit witnesses.
+    // `ScopeOf<AppScopes>` pins the app triad (`Action`/`State`/`Environment`) as the entry point, so each
+    // declaration is just `.action(\.x).state(\.x).environment(…)` — no explicit witnesses.
     //
     // Multi-property environments narrow point-free via `fanout(…) >>> Env.init`. The feature
     // `Environment` inits take `& Sendable` decoders (matching `World`'s storage) so the key-path value
     // type equals the init param type — a plain `any …` param would force a variance conversion inside the
     // variadic pack, which currently crashes the Swift compiler (emit-module SIGSEGV).
-    public typealias Global<A, S, E> = Relay.Scope<
-        Relay.ActionAxis.Prism<Action, A>,
-        Relay.StateAxis.ReadsWrites<State, S>,
-        Relay.EnvironmentAxis.Narrows<Environment, E>
-    >
 
-    public static let calendar: Global<_, _, _> =
+    public static let calendar = ScopeOf<AppScopes>
         .action(\.calendar).state(\.calendar)
         .environment(fanout(
             \.decoder, \.readFile, \.currentDate, \.calendar,
             \.formatDate, \.formatMoney
         ) >>> CalendarFeature.Environment.init)
 
-    public static let dayDetail: Global<_, _, _> =
+    public static let dayDetail = ScopeOf<AppScopes>
         .action(\.dayDetail).state(\.dayDetail)
         .environment(fanout(
             \.decoder, \.encoder, \.readFile, \.saveFile,
@@ -220,25 +214,25 @@ public enum AppScopes: Rig {
             \.dayAfter, \.loadSettings, \.formatDate
         ) >>> DayDetailFeature.Environment.init)
 
-    public static let reportInput: Global<_, _, _> =
+    public static let reportInput = ScopeOf<AppScopes>
         .action(\.reportInput).state(\.reportInput)
         .environment(fanout(
             \.decoder, \.readFile, \.currentDate, \.calendar,
             \.calcTax
         ) >>> ReportInputFeature.Environment.init)
 
-    public static let reportResult: Global<_, _, _> =
+    public static let reportResult = ScopeOf<AppScopes>
         .action(\.reportResult).state(\.reportResult)
         .environment(fanout(\.renderPDF, \.formatDate, \.formatMoney) >>> ReportResultFeature.Environment.init)
 
-    public static let salaryEditor: Global<_, _, _> =
+    public static let salaryEditor = ScopeOf<AppScopes>
         .action(\.salaryEditor).state(\.salaryEditor)
         .environment(fanout(
             \.decoder, \.encoder, \.readFile, \.saveFile,
             \.calendar
         ) >>> SalaryEditorFeature.Environment.init)
 
-    public static let settings: Global<_, _, _> =
+    public static let settings = ScopeOf<AppScopes>
         .action(\.settings).state(\.settings)
         .environment(fanout(\.loadSettings, \.saveSettings, \.exportDatabase) >>> SettingsFeature.Environment.init)
 }
