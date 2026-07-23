@@ -5,6 +5,7 @@ import Foundation
 import SwiftRex
 import SwiftUI
 import SwiftRexArchitecture
+import FPMacros
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
@@ -18,7 +19,7 @@ public enum DayDetailFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         public var date: Date?              // nil until a day is selected/loaded
         public var today: Date?             // set on dayLoaded; used to decide "future" display
         public var record: WorkDayRecord?   // nil until a day is loaded — no placeholder sentinel
@@ -67,8 +68,8 @@ public enum DayDetailFeature {
         let formatDate: @Sendable (Date, String) -> String
 
         public init(
-            decoder: any DataDecoderFactory,
-            encoder: any DataEncoderFactory,
+            decoder: any DataDecoderFactory & Sendable,
+            encoder: any DataEncoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             saveFile: @Sendable @escaping (Data, String) -> Publisher<Void, SavingError>,
             currentDate: @Sendable @escaping () -> Date,
@@ -123,6 +124,7 @@ public enum DayDetailFeature {
             public var durationMinutes: Int?        // nil while a break is open (no end yet)
         }
 
+        @Prisms
         public enum ViewAction: Sendable {
             case setStart(TimeOfDay?)
             case setEnd(TimeOfDay?)

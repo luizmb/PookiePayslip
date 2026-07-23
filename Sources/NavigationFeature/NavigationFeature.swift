@@ -15,7 +15,7 @@ public enum NavigationFeature {
     // MARK: - State
 
     @Lenses
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         public var path: [AppRoute]
 
         public init(path: [AppRoute] = []) {

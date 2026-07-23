@@ -20,7 +20,7 @@ import SwiftRexReactiveConcurrency
 // MARK: - AppState
 
 @Lenses
-public struct AppState: Sendable, Codable {
+public struct AppState: Sendable {
     public var navigation:   NavigationFeature.State
     public var calendar:     CalendarFeature.State
     public var dayDetail:    DayDetailFeature.State
@@ -186,79 +186,53 @@ private extension Store<AppAction, AppState, World> {
 
 // MARK: - Feature scopes
 
-public enum AppScopes {
-    public static let calendar = Relay.Empty
-        .action(AppAction.prism.calendar).state(\AppState.calendar)
-        .environment { (world: World) in
-            CalendarFeature.Environment(
-                decoder:     world.decoder,
-                readFile:    world.readFile,
-                currentDate: world.currentDate,
-                calendar:    world.calendar,
-                formatDate:  world.formatDate,
-                formatMoney: world.formatMoney
-            )
-        }
+public enum AppScopes: Rig {
+    public typealias Action = AppAction
+    public typealias State = AppState
+    public typealias Environment = World
 
-    public static let dayDetail = Relay.Empty
-        .action(AppAction.prism.dayDetail).state(\AppState.dayDetail)
-        .environment { (world: World) in
-            DayDetailFeature.Environment(
-                decoder:     world.decoder,
-                encoder:     world.encoder,
-                readFile:    world.readFile,
-                saveFile:    world.saveFile,
-                currentDate: world.currentDate,
-                newID:       world.newID,
-                calendar:    world.calendar,
-                dayBefore:   world.dayBefore,
-                dayAfter:    world.dayAfter,
-                loadSettings: world.loadSettings,
-                formatDate:  world.formatDate
-            )
-        }
+    // `ScopeOf<AppScopes>` pins the app triad (`Action`/`State`/`Environment`) as the entry point, so each
+    // declaration is just `.action(\.x).state(\.x).environment(…)` — no explicit witnesses.
+    //
+    // Multi-property environments narrow point-free via `fanout(…) >>> Env.init`. The feature
+    // `Environment` inits take `& Sendable` decoders (matching `World`'s storage) so the key-path value
+    // type equals the init param type — a plain `any …` param would force a variance conversion inside the
+    // variadic pack, which currently crashes the Swift compiler (emit-module SIGSEGV).
 
-    public static let reportInput = Relay.Empty
-        .action(AppAction.prism.reportInput).state(\AppState.reportInput)
-        .environment { (world: World) in
-            ReportInputFeature.Environment(
-                decoder:     world.decoder,
-                readFile:    world.readFile,
-                currentDate: world.currentDate,
-                calendar:    world.calendar,
-                calcTax:     world.calcTax
-            )
-        }
+    public static let calendar = ScopeOf<AppScopes>
+        .action(\.calendar).state(\.calendar)
+        .environment(fanout(
+            \.decoder, \.readFile, \.currentDate, \.calendar,
+            \.formatDate, \.formatMoney
+        ) >>> CalendarFeature.Environment.init)
 
-    public static let reportResult = Relay.Empty
-        .action(AppAction.prism.reportResult).state(\AppState.reportResult)
-        .environment { (world: World) in
-            ReportResultFeature.Environment(
-                renderPDF: { r, recs in world.renderPDF(r, recs) },
-                formatDate: world.formatDate,
-                formatMoney: world.formatMoney
-            )
-        }
+    public static let dayDetail = ScopeOf<AppScopes>
+        .action(\.dayDetail).state(\.dayDetail)
+        .environment(fanout(
+            \.decoder, \.encoder, \.readFile, \.saveFile,
+            \.currentDate, \.newID, \.calendar, \.dayBefore,
+            \.dayAfter, \.loadSettings, \.formatDate
+        ) >>> DayDetailFeature.Environment.init)
 
-    public static let salaryEditor = Relay.Empty
-        .action(AppAction.prism.salaryEditor).state(\AppState.salaryEditor)
-        .environment { (world: World) in
-            SalaryEditorFeature.Environment(
-                decoder:  world.decoder,
-                encoder:  world.encoder,
-                readFile: world.readFile,
-                saveFile: world.saveFile,
-                calendar: world.calendar
-            )
-        }
+    public static let reportInput = ScopeOf<AppScopes>
+        .action(\.reportInput).state(\.reportInput)
+        .environment(fanout(
+            \.decoder, \.readFile, \.currentDate, \.calendar,
+            \.calcTax
+        ) >>> ReportInputFeature.Environment.init)
 
-    public static let settings = Relay.Empty
-        .action(AppAction.prism.settings).state(\AppState.settings)
-        .environment { (world: World) in
-            SettingsFeature.Environment(
-                loadSettings: world.loadSettings,
-                saveSettings: world.saveSettings,
-                exportDatabase: world.exportDatabase
-            )
-        }
+    public static let reportResult = ScopeOf<AppScopes>
+        .action(\.reportResult).state(\.reportResult)
+        .environment(fanout(\.renderPDF, \.formatDate, \.formatMoney) >>> ReportResultFeature.Environment.init)
+
+    public static let salaryEditor = ScopeOf<AppScopes>
+        .action(\.salaryEditor).state(\.salaryEditor)
+        .environment(fanout(
+            \.decoder, \.encoder, \.readFile, \.saveFile,
+            \.calendar
+        ) >>> SalaryEditorFeature.Environment.init)
+
+    public static let settings = ScopeOf<AppScopes>
+        .action(\.settings).state(\.settings)
+        .environment(fanout(\.loadSettings, \.saveSettings, \.exportDatabase) >>> SettingsFeature.Environment.init)
 }

@@ -13,7 +13,7 @@ public enum CalendarFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         // Source of truth — only these change via Actions:
         public var currentMonth: Date?      // nil until first load; the viewed month
         public var today: Date?             // nil until loaded; drives the "today" highlight
@@ -73,7 +73,7 @@ public enum CalendarFeature {
         let formatMoney: @Sendable (Decimal, Int) -> String
 
         public init(
-            decoder: any DataDecoderFactory,
+            decoder: any DataDecoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             currentDate: @Sendable @escaping () -> Date,
             calendar: @Sendable @escaping () -> Calendar,

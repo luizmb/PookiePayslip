@@ -5,6 +5,7 @@ import Foundation
 import SwiftRex
 import SwiftUI
 import SwiftRexArchitecture
+import FPMacros
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
@@ -13,9 +14,17 @@ public enum ReportInputFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
-        public var fromDate: Date?         // seeded real by AppState.init; nil only in the no-arg test default
-        public var toDate: Date?
+    /// The report period — the two dates travel together (both resolved at once in `.started`, both edited
+    /// only while the screen is shown), so they're one optional group, not two parallel optionals. `nil`
+    /// until "now" resolves; present ⇒ the screen operates on the **unwrapped** range.
+    public struct DateRange: Sendable, Equatable {
+        public var from: Date
+        public var to: Date
+        public init(from: Date, to: Date) { self.from = from; self.to = to }
+    }
+
+    public struct State: Sendable, Equatable {
+        public var range: DateRange?       // resolved in `.started`; nil only in the no-arg test default
         public var salary: SalaryRecord?   // loaded from the start month; nil if not configured
         public var estimateFuture: Bool
         public var today: Date?            // nil until the period is first resolved
@@ -49,7 +58,7 @@ public enum ReportInputFeature {
         let calcTax: @Sendable (Decimal, Int, SalaryRecord) -> TaxBreakdown
 
         public init(
-            decoder: any DataDecoderFactory,
+            decoder: any DataDecoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             currentDate: @Sendable @escaping () -> Date,
             calendar: @Sendable @escaping () -> Calendar,
@@ -66,8 +75,7 @@ public enum ReportInputFeature {
     // MARK: - ViewModel
 
         public struct ViewState: Sendable, Equatable {
-            public var fromDate: Date?     // nil only before "now" is resolved (never once running)
-            public var toDate: Date?
+            public var range: DateRange?   // nil only before "now" is resolved; present ⇒ transposes to the editor
             public var estimateFuture: Bool
             public var showEstimateToggle: Bool
             public var weekdayAvgText: String
@@ -87,6 +95,7 @@ public enum ReportInputFeature {
             public var noSalaryWarning: String?  // shown if salary not configured
         }
 
+        @Prisms
         public enum ViewAction: Sendable {
             case setFrom(Date)
             case setTo(Date)
@@ -101,11 +110,10 @@ public enum ReportInputFeature {
     public static let mapState = Reader<Environment, @MainActor @Sendable (State) -> ViewState> { _ in { state in
         let avgDesc = "Project the remaining days from your averages (\(fmtHours(state.weekdayAvgHours))h / weekday, \(fmtHours(state.weekendAvgHours))h / weekend day)."
         let salaryLabel = state.salary?.displayString ?? "Not set"
-        let showEstimate: Bool = { if let today = state.today, let to = state.toDate { to > today } else { false } }()
-        let canGenerate: Bool = { if let from = state.fromDate, let to = state.toDate { from <= to && state.salary != nil } else { false } }()
+        let showEstimate: Bool = { if let today = state.today, let r = state.range { r.to > today } else { false } }()
+        let canGenerate: Bool = { if let r = state.range { r.from <= r.to && state.salary != nil } else { false } }()
         return .init(
-            fromDate: state.fromDate,
-            toDate: state.toDate,
+            range: state.range,
             estimateFuture: state.estimateFuture,
             showEstimateToggle: showEstimate,
             weekdayAvgText: fmtHours(state.weekdayAvgHours),
@@ -139,8 +147,7 @@ public enum ReportInputFeature {
 
     public static func initialState(with _: Void) -> State {
         .init(
-            fromDate: nil,
-            toDate: nil,
+            range: nil,
             salary: nil,
             estimateFuture: false,
             today: nil,
@@ -157,7 +164,7 @@ public enum ReportInputFeature {
             guard let stateBefore = context.stateBefore else { return .doNothing }
             switch action {
             case .start:
-                let priorFrom = stateBefore.fromDate
+                let priorFrom = stateBefore.range?.from
                 return .produce { ctx in
                     let today = ctx.environment.currentDate()
                     let cal = ctx.environment.calendar()
@@ -180,12 +187,11 @@ public enum ReportInputFeature {
                     state.today = today
                     state.salary = salary
                     state.noSalaryWarning = warning
-                    if state.fromDate == nil { state.fromDate = monthStart }
-                    if state.toDate == nil { state.toDate = today }
+                    if state.range == nil { state.range = DateRange(from: monthStart, to: today) }
                     // The estimate toggle is only shown when the period runs into the future.
-                    // Clamp the flag so a persisted "on" can't leave projection silently active
+                    // Clamp the flag so a stale "on" can't leave projection silently active
                     // with the checkbox hidden (e.g. on re-entry once `today` has advanced).
-                    if let toDate = state.toDate, toDate <= today { state.estimateFuture = false }
+                    if let r = state.range, r.to <= today { state.estimateFuture = false }
                 }
 
             case .salaryReloaded(let salary, let warning):
@@ -197,7 +203,7 @@ public enum ReportInputFeature {
 
             case .setFrom(let d):
                 return .reduce { state in
-                    state.fromDate = d
+                    state.range?.from = d
                     if state.estimateFuture, let today = state.today, d > today { state.estimateFuture = false }
                 }
                 .produce { ctx in
@@ -213,7 +219,7 @@ public enum ReportInputFeature {
 
             case .setTo(let d):
                 return .reduce { state in
-                    state.toDate = d
+                    state.range?.to = d
                     if let today = state.today, d <= today { state.estimateFuture = false }
                 }
 
@@ -221,7 +227,9 @@ public enum ReportInputFeature {
                 return .reduce { $0.estimateFuture.toggle() }
 
             case .generate:
-                guard let from = stateBefore.fromDate, let to = stateBefore.toDate else { return .doNothing }
+                guard let range = stateBefore.range else { return .doNothing }
+                let from = range.from
+                let to = range.to
                 let today    = stateBefore.today
                 // Only project when the period actually runs into the future — i.e. exactly when
                 // the toggle is shown. Guards against a stale `estimateFuture` flag (see bug 1).

@@ -5,6 +5,7 @@ import Foundation
 import SwiftRex
 import SwiftUI
 import SwiftRexArchitecture
+import FPMacros
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
@@ -13,7 +14,7 @@ public enum SalaryEditorFeature {
 
     // MARK: - State
 
-    public struct State: Sendable, Equatable, Codable {
+    public struct State: Sendable, Equatable {
         public var amount: Decimal
         public var periodicity: SalaryPeriodicity
         public var niClass: NIClass
@@ -49,8 +50,8 @@ public enum SalaryEditorFeature {
         let calendar:    @Sendable () -> Calendar
 
         public init(
-            decoder:  any DataDecoderFactory,
-            encoder:  any DataEncoderFactory,
+            decoder:  any DataDecoderFactory & Sendable,
+            encoder:  any DataEncoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             saveFile: @Sendable @escaping (Data, String) -> Publisher<Void, SavingError>,
             calendar: @Sendable @escaping () -> Calendar
@@ -82,6 +83,7 @@ public enum SalaryEditorFeature {
             public var canSave: Bool
         }
 
+        @Prisms
         public enum ViewAction: Sendable {
             case setAmountText(String)
             case setPeriodicity(SalaryPeriodicity)
