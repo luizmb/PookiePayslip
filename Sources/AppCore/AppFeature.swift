@@ -195,7 +195,7 @@ public enum AppScopes: Rig {
     // Annotating a scope `Global<_,_,_>` roots the bare optics, so each declares as
     // `.action(\.x).state(\.x).environment(…)` with no explicit witnesses.
     //
-    // Multi-property environments narrow point-free via `fanout(keypaths: …, into: Env.init)`. The feature
+    // Multi-property environments narrow point-free via `fanout(…) >>> Env.init`. The feature
     // `Environment` inits take `& Sendable` decoders (matching `World`'s storage) so the key-path value
     // type equals the init param type — a plain `any …` param would force a variance conversion inside the
     // variadic pack, which currently crashes the Swift compiler (emit-module SIGSEGV).
@@ -208,43 +208,37 @@ public enum AppScopes: Rig {
     public static let calendar: Global<_, _, _> =
         .action(\.calendar).state(\.calendar)
         .environment(fanout(
-            keypaths: \.decoder, \.readFile, \.currentDate, \.calendar, \.formatDate, \.formatMoney,
-            into: CalendarFeature.Environment.init
-        ))
+            \.decoder, \.readFile, \.currentDate, \.calendar,
+            \.formatDate, \.formatMoney
+        ) >>> CalendarFeature.Environment.init)
 
     public static let dayDetail: Global<_, _, _> =
         .action(\.dayDetail).state(\.dayDetail)
         .environment(fanout(
-            keypaths: \.decoder, \.encoder, \.readFile, \.saveFile, \.currentDate, \.newID,
-                      \.calendar, \.dayBefore, \.dayAfter, \.loadSettings, \.formatDate,
-            into: DayDetailFeature.Environment.init
-        ))
+            \.decoder, \.encoder, \.readFile, \.saveFile,
+            \.currentDate, \.newID, \.calendar, \.dayBefore,
+            \.dayAfter, \.loadSettings, \.formatDate
+        ) >>> DayDetailFeature.Environment.init)
 
     public static let reportInput: Global<_, _, _> =
         .action(\.reportInput).state(\.reportInput)
         .environment(fanout(
-            keypaths: \.decoder, \.readFile, \.currentDate, \.calendar, \.calcTax,
-            into: ReportInputFeature.Environment.init
-        ))
+            \.decoder, \.readFile, \.currentDate, \.calendar,
+            \.calcTax
+        ) >>> ReportInputFeature.Environment.init)
 
     public static let reportResult: Global<_, _, _> =
         .action(\.reportResult).state(\.reportResult)
-        .environment(fanout(
-            keypaths: \.renderPDF, \.formatDate, \.formatMoney,
-            into: ReportResultFeature.Environment.init
-        ))
+        .environment(fanout(\.renderPDF, \.formatDate, \.formatMoney) >>> ReportResultFeature.Environment.init)
 
     public static let salaryEditor: Global<_, _, _> =
         .action(\.salaryEditor).state(\.salaryEditor)
         .environment(fanout(
-            keypaths: \.decoder, \.encoder, \.readFile, \.saveFile, \.calendar,
-            into: SalaryEditorFeature.Environment.init
-        ))
+            \.decoder, \.encoder, \.readFile, \.saveFile,
+            \.calendar
+        ) >>> SalaryEditorFeature.Environment.init)
 
     public static let settings: Global<_, _, _> =
         .action(\.settings).state(\.settings)
-        .environment(fanout(
-            keypaths: \.loadSettings, \.saveSettings, \.exportDatabase,
-            into: SettingsFeature.Environment.init
-        ))
+        .environment(fanout(\.loadSettings, \.saveSettings, \.exportDatabase) >>> SettingsFeature.Environment.init)
 }
