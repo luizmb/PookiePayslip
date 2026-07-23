@@ -195,10 +195,10 @@ public enum AppScopes: Rig {
     // Annotating a scope `Global<_,_,_>` roots the bare optics, so each declares as
     // `.action(\.x).state(\.x).environment(…)` with no explicit witnesses.
     //
-    // Multi-property environments narrow point-free via `fanout(keypaths: …, into: Env.init)` — EXCEPT
-    // the scopes whose `Environment` takes an existential (`any DataDecoderFactory & Sendable`) argument:
-    // routing an existential through the variadic `fanout` parameter pack currently crashes the Swift
-    // compiler (emit-module SIGSEGV), so calendar/dayDetail/reportInput/salaryEditor stay closures.
+    // Multi-property environments narrow point-free via `fanout(keypaths: …, into: Env.init)`. The feature
+    // `Environment` inits take `& Sendable` decoders (matching `World`'s storage) so the key-path value
+    // type equals the init param type — a plain `any …` param would force a variance conversion inside the
+    // variadic pack, which currently crashes the Swift compiler (emit-module SIGSEGV).
     public typealias Global<A, S, E> = Relay.Scope<
         Relay.ActionAxis.Prism<Action, A>,
         Relay.StateAxis.ReadsWrites<State, S>,
@@ -207,32 +207,25 @@ public enum AppScopes: Rig {
 
     public static let calendar: Global<_, _, _> =
         .action(\.calendar).state(\.calendar)
-        .environment { (world: World) in
-            CalendarFeature.Environment(
-                decoder: world.decoder, readFile: world.readFile, currentDate: world.currentDate,
-                calendar: world.calendar, formatDate: world.formatDate, formatMoney: world.formatMoney
-            )
-        }
+        .environment(fanout(
+            keypaths: \.decoder, \.readFile, \.currentDate, \.calendar, \.formatDate, \.formatMoney,
+            into: CalendarFeature.Environment.init
+        ))
 
     public static let dayDetail: Global<_, _, _> =
         .action(\.dayDetail).state(\.dayDetail)
-        .environment { (world: World) in
-            DayDetailFeature.Environment(
-                decoder: world.decoder, encoder: world.encoder, readFile: world.readFile, saveFile: world.saveFile,
-                currentDate: world.currentDate, newID: world.newID, calendar: world.calendar,
-                dayBefore: world.dayBefore, dayAfter: world.dayAfter, loadSettings: world.loadSettings,
-                formatDate: world.formatDate
-            )
-        }
+        .environment(fanout(
+            keypaths: \.decoder, \.encoder, \.readFile, \.saveFile, \.currentDate, \.newID,
+                      \.calendar, \.dayBefore, \.dayAfter, \.loadSettings, \.formatDate,
+            into: DayDetailFeature.Environment.init
+        ))
 
     public static let reportInput: Global<_, _, _> =
         .action(\.reportInput).state(\.reportInput)
-        .environment { (world: World) in
-            ReportInputFeature.Environment(
-                decoder: world.decoder, readFile: world.readFile, currentDate: world.currentDate,
-                calendar: world.calendar, calcTax: world.calcTax
-            )
-        }
+        .environment(fanout(
+            keypaths: \.decoder, \.readFile, \.currentDate, \.calendar, \.calcTax,
+            into: ReportInputFeature.Environment.init
+        ))
 
     public static let reportResult: Global<_, _, _> =
         .action(\.reportResult).state(\.reportResult)
@@ -243,12 +236,10 @@ public enum AppScopes: Rig {
 
     public static let salaryEditor: Global<_, _, _> =
         .action(\.salaryEditor).state(\.salaryEditor)
-        .environment { (world: World) in
-            SalaryEditorFeature.Environment(
-                decoder: world.decoder, encoder: world.encoder, readFile: world.readFile,
-                saveFile: world.saveFile, calendar: world.calendar
-            )
-        }
+        .environment(fanout(
+            keypaths: \.decoder, \.encoder, \.readFile, \.saveFile, \.calendar,
+            into: SalaryEditorFeature.Environment.init
+        ))
 
     public static let settings: Global<_, _, _> =
         .action(\.settings).state(\.settings)

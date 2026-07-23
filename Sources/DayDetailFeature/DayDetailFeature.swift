@@ -68,8 +68,8 @@ public enum DayDetailFeature {
         let formatDate: @Sendable (Date, String) -> String
 
         public init(
-            decoder: any DataDecoderFactory,
-            encoder: any DataEncoderFactory,
+            decoder: any DataDecoderFactory & Sendable,
+            encoder: any DataEncoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             saveFile: @Sendable @escaping (Data, String) -> Publisher<Void, SavingError>,
             currentDate: @Sendable @escaping () -> Date,

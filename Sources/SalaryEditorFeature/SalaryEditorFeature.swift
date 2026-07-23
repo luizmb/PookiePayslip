@@ -50,8 +50,8 @@ public enum SalaryEditorFeature {
         let calendar:    @Sendable () -> Calendar
 
         public init(
-            decoder:  any DataDecoderFactory,
-            encoder:  any DataEncoderFactory,
+            decoder:  any DataDecoderFactory & Sendable,
+            encoder:  any DataEncoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             saveFile: @Sendable @escaping (Data, String) -> Publisher<Void, SavingError>,
             calendar: @Sendable @escaping () -> Calendar

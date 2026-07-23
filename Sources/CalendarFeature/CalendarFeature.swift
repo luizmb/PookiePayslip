@@ -73,7 +73,7 @@ public enum CalendarFeature {
         let formatMoney: @Sendable (Decimal, Int) -> String
 
         public init(
-            decoder: any DataDecoderFactory,
+            decoder: any DataDecoderFactory & Sendable,
             readFile: @Sendable @escaping (String) -> Publisher<Data, ReadingError>,
             currentDate: @Sendable @escaping () -> Date,
             calendar: @Sendable @escaping () -> Calendar,
