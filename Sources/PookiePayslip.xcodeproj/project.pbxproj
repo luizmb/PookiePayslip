@@ -25,6 +25,7 @@
 		AA79922AD2F5458F9983CE11 /* Quicksand-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Quicksand-Bold.ttf"; path = "App/Resources/Fonts/Quicksand-Bold.ttf"; sourceTree = "<group>"; };
 		DE6A12BF282B429DABA622AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = App/Assets.xcassets; sourceTree = "<group>"; };
 		FF5E7392824746C08010FC6C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = App/Info.plist; sourceTree = "<group>"; };
+		906485C98D44382F64C0B0AA /* Shared.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Shared.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +57,15 @@
 			name = Fonts;
 			sourceTree = "<group>";
 		};
+		F2853B42CCFB085DA143AE53 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				906485C98D44382F64C0B0AA /* Shared.xcconfig */,
+			);
+			name = Config;
+			path = Config;
+			sourceTree = "<group>";
+		};
 		DD7E155628BD4F11935487F8 = {
 			isa = PBXGroup;
 			children = (
@@ -63,6 +73,7 @@
 				550A975BD5CD494AA91BD04F /* PookiePayslipApp.swift */,
 				78088179C58243D19CA922E1 /* Fonts */,
 				FF5E7392824746C08010FC6C /* Info.plist */,
+				F2853B42CCFB085DA143AE53 /* Config */,
 				550B90A4377D4E48900BB994 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -150,12 +161,12 @@
 /* Begin XCBuildConfiguration section */
 		023616029D8D44DAA98EA1E0 /* Release configuration for PBXNativeTarget "PookiePayslip" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 906485C98D44382F64C0B0AA /* Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = REDACTED_TEAM_ID;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "App/Info-Release.plist";
@@ -173,12 +184,12 @@
 		};
 		17053A5B1E9E4035B0741F6E /* Debug configuration for PBXNativeTarget "PookiePayslip" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 906485C98D44382F64C0B0AA /* Shared.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 3;
-				DEVELOPMENT_TEAM = REDACTED_TEAM_ID;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
@@ -220,7 +231,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = REDACTED_TEAM_ID;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -274,7 +284,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = REDACTED_TEAM_ID;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;

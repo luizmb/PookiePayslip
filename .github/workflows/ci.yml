@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Build & Test (macOS)
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.5.app
+
+      - name: swift build
+        run: swift build 2>&1
+
+      - name: swift test
+        run: swift test 2>&1
+
+      # xcodebuild in a non-interactive CI runner has no one to click "Trust & Enable" on
+      # the SPM macro plugins (SwiftRexMacros, FPMacrosPlugin) this project depends on —
+      # confirmed on luizmb/tacos-mind: "Macro ... must be enabled before it can be used".
+      # These defaults are the standard headless-CI workaround.
+      - name: Trust SPM macro plugins for headless xcodebuild
+        run: |
+          defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+          defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
+      # CODE_SIGNING_ALLOWED=NO: this runner has no "Apple Development" certificate for
+      # the project's team ID, and CI only needs to confirm the code builds, not produce
+      # a signed artifact.
+      - name: xcodebuild PookiePayslip
+        run: |
+          xcodebuild build \
+            -project Sources/PookiePayslip.xcodeproj \
+            -scheme PookiePayslip \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1
