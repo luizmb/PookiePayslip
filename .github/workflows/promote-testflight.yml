@@ -134,12 +134,20 @@ jobs:
           </plist>
           PLIST
 
+          # Explicit CODE_SIGN_IDENTITY/PROVISIONING_PROFILE_SPECIFIER on the archive
+          # itself too, not just in exportOptions.plist above — see release.yml's
+          # identical comment: left fully automatic, a fresh CI keychain has no
+          # Development identity to reuse, so -allowProvisioningUpdates mints a brand-new
+          # one via the API on every run.
           xcodebuild archive \
             -project Sources/PookiePayslip.xcodeproj \
             -scheme PookiePayslip \
             -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/PookiePayslip.xcarchive" \
             -allowProvisioningUpdates \
+            CODE_SIGN_STYLE=Manual \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="PookiePayslip AppStore Distribution" \
             -authenticationKeyPath "$HOME/.appstoreconnect/private_keys/AuthKey_${API_KEY_ID}.p8" \
             -authenticationKeyID "$API_KEY_ID" \
             -authenticationKeyIssuerID "$API_ISSUER_ID"
