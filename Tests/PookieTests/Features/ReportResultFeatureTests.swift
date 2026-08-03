@@ -1,6 +1,7 @@
 import AppDomain
 import Foundation
 import ReportResultFeature
+import SwiftRexSwiftUI
 import SwiftRex
 import SwiftRexArchitecture
 import SwiftRexTesting
@@ -46,17 +47,15 @@ private func rendered88() -> ReportResultFeature.Rendered {
 @MainActor
 struct ReportResultFeatureBehaviorTests {
 
-    @Test func loadedStoresReportAndDatesThenFormats() async {
-        let report = mockReport()
-        let s = store()
+    @Test func startFormatsTheSeededReport() async {
+        // The navigation push seeds report/records/dates; `.start` only formats them.
+        var initial = ReportResultFeature.initialState(with: ())
+        initial.report = mockReport()
+        initial.fromDate = Fixture.twoDaysAgo
+        initial.toDate = Fixture.today
+        let s = store(initial: initial)
 
-        s.dispatch(.loaded(report, [], from: Fixture.twoDaysAgo, to: Fixture.today)) { state in
-            state.report = report; state.records = []
-            state.fromDate = Fixture.twoDaysAgo
-            state.toDate = Fixture.today
-            state.pdfData = nil
-        }
-        // .loaded then formats the locale-sensitive strings and stores them via .rendered
+        s.dispatch(.start) { _ in }   // produce-only
         await s.runEffects()
         s.receive(ReportResultFeature.Action.prism.rendered) { rendered, state in
             state.rendered = rendered
@@ -65,21 +64,10 @@ struct ReportResultFeatureBehaviorTests {
         }
     }
 
-    @Test func loadedNewReportClearsPreviousPDFData() async {
-        var initial = ReportResultFeature.initialState(with: ())
-        initial.report = mockReport()
-        initial.pdfData = Data("old-pdf".utf8)
-        let s = store(initial: initial)
-
-        let newReport = mockReport(totalHours: 16, grossPay: 176)
-        s.dispatch(.loaded(newReport, [], from: Fixture.twoDaysAgo, to: Fixture.today)) { state in
-            state.report = newReport; state.records = []
-            state.fromDate = Fixture.twoDaysAgo
-            state.toDate = Fixture.today
-            state.pdfData = nil
-        }
-        await s.runEffects()
-        s.receive(ReportResultFeature.Action.prism.rendered) { rendered, state in state.rendered = rendered }
+    @Test func startWithoutASeededReportDoesNothing() {
+        // Unreachable in the app — the push always seeds — but the guard should hold regardless.
+        let s = store(exhaustive: false)
+        s.dispatch(.start, assert: { _ in })
     }
 
     @Test func exportPDFWithReportProducesPDFReadyAction() async {
@@ -90,7 +78,7 @@ struct ReportResultFeatureBehaviorTests {
         s.dispatch(.exportPDF) { _ in }  // produce-only
         await s.runEffects()
         s.receive(ReportResultFeature.Action.prism.pdfReady) { data, state in
-            state.pdfData = data
+            state.preview = .presented(PDFShareable(data: data, filename: "payslip.pdf"))
             #expect(!data.isEmpty)
         }
     }
@@ -110,26 +98,32 @@ struct ReportResultFeatureBehaviorTests {
         s.receive(ReportResultFeature.Action.prism.pdfFailed) { _, _ in }
     }
 
-    @Test func pdfReadyStoresPDFData() {
+    @Test func pdfReadyPresentsTheDocument() {
         let s = store()
         let data = Data("pdf-content".utf8)
         s.dispatch(.pdfReady(data)) { state in
-            state.pdfData = data
+            state.preview = .presented(PDFShareable(data: data, filename: "payslip.pdf"))
         }
     }
 
-    @Test func dismissPreviewClearsPDFData() {
+    /// Two dispatches, one stage each: the binding's `set(false)` starts the out-animation and
+    /// `onDismiss` completes it. The document stays readable through `dismissing`, so the sheet does not
+    /// blank mid-animation.
+    @Test func dismissPreviewWalksThePresentationOneStageAtATime() {
+        let pdf = PDFShareable(data: Data("pdf-content".utf8), filename: "payslip.pdf")
         var initial = ReportResultFeature.initialState(with: ())
-        initial.pdfData = Data("pdf-content".utf8)
+        initial.preview = .presented(pdf)
         let s = store(initial: initial)
-        s.dispatch(.dismissPreview) { state in
-            state.pdfData = nil
-        }
-    }
 
-    @Test func backIsPassthrough() {
-        let s = store(exhaustive: false)
-        s.dispatch(.back, assert: { _ in })
+        s.dispatch(.dismissPreview) { state in
+            state.preview = .dismissing(last: pdf)
+        }
+        #expect(s.state.preview.wrapped == pdf)
+
+        s.dispatch(.dismissPreview) { state in
+            state.preview = .dismissed
+        }
+        #expect(s.state.preview.wrapped == nil)
     }
 }
 
@@ -250,21 +244,15 @@ struct ReportResultFeatureMapStateTests {
         #expect(!vs.printButtonLabel.isEmpty)
     }
 
-    @Test func pdfShareablePassedThrough() {
+    @Test func previewPassedThrough() {
         var state = ReportResultFeature.initialState(with: ())
         state.report = mockReport()
-        state.pdfData = Data("pdf".utf8)
+        #expect(!ReportResultFeature.mapState(.mock)(state).preview.isPresented)
+
+        state.preview = .presented(PDFShareable(data: Data("pdf".utf8), filename: "payslip.pdf"))
         let vs = ReportResultFeature.mapState(.mock)(state)
-        #expect(vs.pdfShareable != nil)
-    }
-
-    @Test func isPreviewPresentedReflectsPDFData() {
-        var state = ReportResultFeature.initialState(with: ())
-        state.report = mockReport()
-        #expect(!ReportResultFeature.mapState(.mock)(state).isPreviewPresented)
-
-        state.pdfData = Data("pdf".utf8)
-        #expect(ReportResultFeature.mapState(.mock)(state).isPreviewPresented)
+        #expect(vs.preview.isPresented)
+        #expect(vs.preview.wrapped != nil)
     }
 }
 
@@ -278,9 +266,9 @@ struct ReportResultFeatureMapActionTests {
         #expect(ReportResultFeature.Action.prism.exportPDF.preview(action) != nil)
     }
 
-    @Test func backMapsThrough() {
-        let action = ReportResultFeature.mapAction(.mock)(.back)
-        #expect(ReportResultFeature.Action.prism.back.preview(action) != nil)
+    @Test func onAppearMapsToStart() {
+        let action = ReportResultFeature.mapAction(.mock)(.onAppear)
+        #expect(ReportResultFeature.Action.prism.start.preview(action) != nil)
     }
 
     @Test func dismissPreviewMapsThrough() {
@@ -388,7 +376,7 @@ struct ReportResultFeatureSnapshotTests {
 
     @Test func snapshotWithPDFReady() async {
         var s = loadedState(report: baseReport())
-        s.pdfData = Data("fake-pdf".utf8)
+        s.preview = .presented(PDFShareable(data: Data("fake-pdf".utf8), filename: "payslip.pdf"))
         await snap(feature(state: s), named: "reportresult-pdf-ready")
     }
 }

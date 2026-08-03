@@ -42,3 +42,26 @@ jobs:
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
             CODE_SIGNING_ALLOWED=NO \
             2>&1
+
+      # `swift test` above runs on macOS, which compiles out every `#if os(iOS)` block — that is the
+      # whole snapshot suite. Without this step those tests are never built, let alone run, and a
+      # compile error in them (or a rendering regression) ships unnoticed.
+      - name: xcodebuild test (iOS Simulator — includes snapshot tests)
+        run: |
+          xcodebuild test \
+            -scheme PookiePayslip-Package \
+            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
+            -resultBundlePath TestResults.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1
+
+      # A snapshot mismatch is only readable as an image, and the reference/failure/difference PNGs are
+      # attached to the result bundle. Without this the log just says "does not match reference".
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults.xcresult
+          if-no-files-found: ignore
+          retention-days: 7

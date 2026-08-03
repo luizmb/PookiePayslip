@@ -35,9 +35,8 @@ public enum SalaryEditorFeature {
         case setStudentLoan(StudentLoanPlan)
         case setPensionEnabled(Bool)
         case save
-        case saved(SalaryRecord)   // dispatched after file write; bridgeBehavior routes to calendar
+        case saved(SalaryRecord)   // dispatched after file write; AppFeature's fold routes it to the calendar
         case saveFailed
-        case back
     }
 
     // MARK: - Environment
@@ -91,7 +90,6 @@ public enum SalaryEditorFeature {
             case setStudentLoan(StudentLoanPlan)
             case setPensionEnabled(Bool)
             case save
-            case back
         }
 
     // MARK: - Mappings
@@ -142,7 +140,6 @@ public enum SalaryEditorFeature {
         case .setStudentLoan(let l):  return .setStudentLoan(l)
         case .setPensionEnabled(let b): return .setPensionEnabled(b)
         case .save:                   return .save
-        case .back:                   return .back
         }
     } }
 
@@ -199,11 +196,28 @@ public enum SalaryEditorFeature {
                         }
                 }
 
-            case .saved, .saveFailed, .back:
-                return .doNothing   // bridgeBehavior handles navigation + calendar update
+            case .saved, .saveFailed:
+                return .doNothing   // AppFeature's fold handles navigation + the calendar update
             }
         }
     }
 
     public typealias Content = SalaryEditorView
+}
+
+// MARK: - Seeding
+
+public extension SalaryEditorFeature.State {
+    /// A fresh editor for `month`, pre-filled from an existing salary when there is one. The feature owns
+    /// its own defaults — a caller never reaches in to set fields individually.
+    init(editing salary: SalaryRecord?, month: Date?) {
+        self.init(
+            amount:      salary?.amount      ?? 0,
+            periodicity: salary?.periodicity ?? .hourly,
+            niClass:     salary?.niClass     ?? .employed,
+            studentLoan: salary?.studentLoan ?? .none,
+            pensionRate: salary?.pensionRate ?? 0,
+            monthDate:   month
+        )
+    }
 }

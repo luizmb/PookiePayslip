@@ -49,7 +49,6 @@ public enum DayDetailFeature {
         case saveFailed(PersistError)
         case prevDay
         case nextDay
-        case done            // user explicitly pressed back → bridgeBehavior pops
     }
 
     // MARK: - Environment
@@ -105,7 +104,6 @@ public enum DayDetailFeature {
             public var addBreakLabel: String
             public var nowButtonLabel: String
             public var timePlaceholder: String
-            public var doneButtonLabel: String
             public var startTime: TimeOfDay?
             public var endTime: TimeOfDay?
             public var breaks: [BreakRowModel]
@@ -139,7 +137,6 @@ public enum DayDetailFeature {
             case setBreakEndNow(Int)
             case prevDay
             case nextDay
-            case done
             case onAppear
         }
 
@@ -330,8 +327,8 @@ public enum DayDetailFeature {
                         }
                 }
 
-            case .saveCompleted, .saveFailed, .done:
-                return .doNothing  // bridgeBehavior routes .saveCompleted to calendar; .done + nav handled there
+            case .saveCompleted, .saveFailed:
+                return .doNothing  // AppFeature's fold routes .saveCompleted to the calendar's cache
             }
         }
     }
@@ -455,7 +452,6 @@ private let buildViewState: @MainActor @Sendable (DayDetailFeature.State) -> Day
         addBreakLabel: "Add a break",
         nowButtonLabel: "Now",
         timePlaceholder: "--:--",
-        doneButtonLabel: "Done",
         startTime: state.record?.startTime ?? nil,
         endTime: state.record?.endTime ?? nil,
         breaks: breakModels,
@@ -482,8 +478,17 @@ private extension DayDetailFeature.ViewAction {
         case .setBreakEndNow(let i):        .setBreakEndNow(i)
         case .prevDay:                      .prevDay
         case .nextDay:                      .nextDay
-        case .done:                         .done
         case .onAppear:                     .start
         }
+    }
+}
+
+// MARK: - Seeding
+
+public extension DayDetailFeature.State {
+    /// A fresh screen for `date` — everything else loads on `.start`. Seeding is construction, so there
+    /// is no partly-filled screen for a caller to finish assembling.
+    init(date: Date) {
+        self.init(date: date, today: nil, record: nil, defaults: .default, dateTitle: "")
     }
 }

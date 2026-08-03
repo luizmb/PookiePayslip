@@ -116,7 +116,7 @@ struct CalendarFeatureBehaviorTests {
         s.receive(CalendarFeature.Action.prism.setRendered) { rendered, state in state.rendered = rendered }
     }
 
-    // MARK: - passthrough actions (handled by bridgeBehavior)
+    // MARK: - passthrough actions (routed by AppFeature's fold)
 
     @Test func selectDayProducesNoLocalStateChange() {
         let s = store(exhaustive: false)

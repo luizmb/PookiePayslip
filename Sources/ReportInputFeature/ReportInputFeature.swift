@@ -45,7 +45,6 @@ public enum ReportInputFeature {
         case generate
         case reportGenerated(PayReport, [WorkDayRecord], from: Date, to: Date)
         case generationFailed
-        case back
     }
 
     // MARK: - Environment
@@ -101,7 +100,6 @@ public enum ReportInputFeature {
             case setTo(Date)
             case toggleEstimate
             case generate
-            case back
             case onAppear
         }
 
@@ -138,7 +136,6 @@ public enum ReportInputFeature {
         case .setTo(let d):    .setTo(d)
         case .toggleEstimate:  .toggleEstimate
         case .generate:        .generate
-        case .back:            .back
         case .onAppear:        .start
         }
     } }
@@ -262,7 +259,7 @@ public enum ReportInputFeature {
 
             case .reportGenerated(let report, _, _, _):
                 // ReportInputFeature handles only its own state (averages)
-                // bridgeBehavior routes the full action to ReportResultFeature + navigation
+                // AppFeature's fold pushes the result screen, carrying this report with it
                 return .reduce { state in
                     state.weekdayAvgHours = report.weekdayAvgHours
                     state.weekendAvgHours = report.weekendAvgHours
@@ -270,9 +267,6 @@ public enum ReportInputFeature {
 
             case .generationFailed:
                 return .doNothing
-
-            case .back:
-                return .doNothing   // bridgeBehavior handles navigation
             }
         }
     }

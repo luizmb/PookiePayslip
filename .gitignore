@@ -4,5 +4,6 @@
 DerivedData/
 *.xcuserstate
 xcuserdata/
+*.xcresult
 Bug/
 Sources/Config/Local.xcconfig

@@ -12,6 +12,9 @@ struct PookiePayslipApp: App {
     }
 
     var body: some Scene {
-        AppRoute.scene(store: store, world: world)
+        WindowGroup {
+            // The app is an ordinary Feature: it builds its own view, and the World stops there.
+            AppFeature.view(store: store, environment: world)
+        }
     }
 }

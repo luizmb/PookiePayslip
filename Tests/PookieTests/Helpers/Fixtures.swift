@@ -5,9 +5,14 @@ import Foundation
 // MARK: - Fixed dates (no Date() calls — all computed once at compile/load time)
 
 enum Fixture {
+    // The region the app is written for. Pinned rather than read from the host, so tests — and the
+    // system controls inside snapshots — render identically on any machine.
+    static let timeZone = TimeZone(identifier: "Europe/London")!
+    static let locale = Locale(identifier: "en_GB")
+
     static let calendar: Calendar = {
         var c = Calendar(identifier: .gregorian)
-        c.timeZone = TimeZone(identifier: "Europe/London")!
+        c.timeZone = timeZone
         return c
     }()
 

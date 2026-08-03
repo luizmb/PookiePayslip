@@ -37,9 +37,8 @@ public enum SettingsFeature {
         case setEnd(TimeOfDay)
         case setBreakMinutes(Int)
         case save
-        case saved(AppSettings)   // bridgeBehavior pops nav
+        case saved(AppSettings)   // AppFeature's fold pops the stack
         case saveFailed
-        case back
         case exportDatabase       // zip all data files for a backup
         case exportReady(Data)    // zip produced → store for the ShareLink
         case exportFailed
@@ -90,7 +89,6 @@ public enum SettingsFeature {
             case setEnd(TimeOfDay)
             case setBreakMinutes(Int)
             case save
-            case back
             case onAppear
             case exportDatabase
         }
@@ -122,7 +120,6 @@ public enum SettingsFeature {
         case .setEnd(let t):          .setEnd(t)
         case .setBreakMinutes(let m): .setBreakMinutes(m)
         case .save:                   .save
-        case .back:                   .back
         case .onAppear:               .start
         case .exportDatabase:         .exportDatabase
         }
@@ -194,8 +191,8 @@ public enum SettingsFeature {
             case .exportFailed:
                 return .doNothing
 
-            case .saved, .saveFailed, .back:
-                return .doNothing   // bridgeBehavior handles navigation
+            case .saved, .saveFailed:
+                return .doNothing   // AppFeature's fold handles navigation
             }
         }
     }
