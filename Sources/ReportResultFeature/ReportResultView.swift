@@ -1,6 +1,7 @@
 import AppDomain
 import PookieStyle
 import SwiftRexArchitecture
+import SwiftRexSwiftUI
 import SwiftUI
 
 @BoundTo(ReportResultFeature.self, strategy: .observationSimple)
@@ -19,8 +20,9 @@ public struct ReportResultView: View {
             netCardLabel:          viewStore.state.netCardLabel,
             finePrintHeading:      viewStore.state.finePrintHeading,
             finePrintBody:         viewStore.state.finePrintBody,
-            pdfShareable:          viewStore.state.pdfShareable
+            pdfShareable:          viewStore.state.preview.wrapped
         )
+        .onAppear { viewStore.dispatch(.onAppear) }
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button { viewStore.dispatch(.exportPDF) } label: {
@@ -34,20 +36,16 @@ public struct ReportResultView: View {
                 }
             }
         }
-        .sheet(
-            isPresented: Binding(
-                get: { viewStore.state.isPreviewPresented },
-                set: { if !$0 { viewStore.dispatch(.dismissPreview) } }
+        // `presenting` wires BOTH dismiss edges — the binding's `set(false)` and `onDismiss` — so the
+        // presentation can never stick mid-dismiss, and the sheet keeps rendering `dismissing(last:)`
+        // while it animates out.
+        .presenting(viewStore, \.preview, dismiss: .dismissPreview) { pdf in
+            PayslipPDFPreview(
+                shareable: pdf,
+                title: "Payslip Preview",
+                shareLabel: viewStore.state.periodLabel.isEmpty ? "Payslip Estimate" : viewStore.state.periodLabel,
+                onClose: { viewStore.dispatch(.dismissPreview) }
             )
-        ) {
-            if let pdf = viewStore.state.pdfShareable {
-                PayslipPDFPreview(
-                    shareable: pdf,
-                    title: "Payslip Preview",
-                    shareLabel: viewStore.state.periodLabel.isEmpty ? "Payslip Estimate" : viewStore.state.periodLabel,
-                    onClose: { viewStore.dispatch(.dismissPreview) }
-                )
-            }
         }
     }
 }

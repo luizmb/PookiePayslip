@@ -4,6 +4,7 @@ import Foundation
 import SwiftRex
 import SwiftUI
 import SwiftRexArchitecture
+import SwiftRexSwiftUI
 import ReactiveConcurrency
 import SwiftRexReactiveConcurrency
 
@@ -17,7 +18,10 @@ public enum ReportResultFeature {
         public var records: [WorkDayRecord]     // individual days for PDF breakdown page
         public var fromDate: Date?
         public var toDate: Date?
-        public var pdfData: Data?
+        /// The PDF preview sheet as one three-stage value rather than a `Bool` + an `Optional` that could
+        /// disagree ("presented with nothing to show" is not representable). `dismissing(last:)` keeps the
+        /// document on screen while the sheet animates out.
+        public var preview: Presentation<PDFShareable>
         public var rendered: Rendered?          // derived, locale-formatted cache (see Rendered)
     }
 
@@ -44,13 +48,12 @@ public enum ReportResultFeature {
     // MARK: - Action
 
     public enum Action: Sendable {
-        case loaded(PayReport, [WorkDayRecord], from: Date, to: Date)
+        case start                // view onAppear; formats the figures the navigation push seeded
         case rendered(Rendered)   // behavior-formatted strings, stored into State
         case exportPDF
         case pdfReady(Data)
         case pdfFailed(RenderError)
         case dismissPreview
-        case back
     }
 
     // MARK: - Environment
@@ -96,8 +99,7 @@ public enum ReportResultFeature {
             // Navigation
             public var printButtonLabel: String
             // PDF
-            public var pdfShareable: PDFShareable?
-            public var isPreviewPresented: Bool
+            public var preview: Presentation<PDFShareable>
         }
 
         public struct BreakdownRow: Sendable, Equatable {
@@ -109,9 +111,9 @@ public enum ReportResultFeature {
         }
 
         public enum ViewAction: Sendable {
+            case onAppear
             case exportPDF
             case dismissPreview
-            case back
         }
 
     // MARK: - Mappings
@@ -119,32 +121,31 @@ public enum ReportResultFeature {
     public static let mapState = Reader<Environment, @MainActor @Sendable (State) -> ViewState> { _ in buildViewState }
     public static let mapAction = Reader<Environment, @Sendable (ViewAction) -> Action> { _ in { va in
         switch va {
+        case .onAppear:       .start
         case .exportPDF:      .exportPDF
         case .dismissPreview: .dismissPreview
-        case .back:           .back
         }
     } }
 
     // MARK: - Lifecycle
 
-    public static func initialState(with _: Void) -> State { .init(report: nil, records: [], fromDate: nil, toDate: nil, pdfData: nil, rendered: nil) }
+    public static func initialState(with _: Void) -> State {
+        .init(report: nil, records: [], fromDate: nil, toDate: nil, preview: .dismissed, rendered: nil)
+    }
 
     // MARK: - Behavior
 
     public static func behavior() -> Behavior<Action, State, Environment> {
         .handle { action, context in
             switch action {
-            case .loaded(let report, let records, let from, let to):
-                return .reduce { state in
-                    state.report = report
-                    state.records = records
-                    state.fromDate = from
-                    state.toDate = to
-                    state.pdfData = nil
-                }
-                .produce { ctx in
-                    // Format the locale-sensitive strings here (Environment is only reachable in an
-                    // effect), then store them back into State via `.rendered`.
+            case .start:
+                // The figures arrived with the navigation push that created this screen; all that is left
+                // is to format them, which needs the Environment and so must happen in an effect.
+                guard let report = context.stateBefore?.report,
+                      let from = context.stateBefore?.fromDate,
+                      let to = context.stateBefore?.toDate
+                else { return .doNothing }
+                return .produce { ctx in
                     let m = ctx.environment.formatMoney
                     let d = ctx.environment.formatDate
                     let rendered = Rendered(
@@ -178,12 +179,18 @@ public enum ReportResultFeature {
                 }
 
             case .pdfReady(let data):
-                return .reduce { $0.pdfData = data }
+                return .reduce { state in
+                    state.preview = .presented(
+                        PDFShareable(data: data, filename: pdfFilename(period: state.rendered?.periodLabel ?? ""))
+                    )
+                }
 
             case .dismissPreview:
-                return .reduce { $0.pdfData = nil }
+                // One stage-dependent step: `presented → dismissing → dismissed`. The binding's
+                // `set(false)` walks the first, `onDismiss` (animation complete) the second.
+                return .reduce { $0.preview = $0.preview.dismiss() }
 
-            case .pdfFailed, .back:
+            case .pdfFailed:
                 return .doNothing
             }
         }
@@ -193,6 +200,14 @@ public enum ReportResultFeature {
 }
 
 // MARK: - Private helpers
+
+/// "12 Jun – 30 Jun" → "payslip-12-Jun-–-30-Jun.pdf"; empty period → "payslip.pdf".
+private func pdfFilename(period: String) -> String {
+    guard !period.isEmpty else { return "payslip.pdf" }
+    return "payslip-\(period).pdf"
+        .replacingOccurrences(of: " ", with: "-")
+        .replacingOccurrences(of: "/", with: "-")
+}
 
 private func fmtHours(_ h: Double) -> String {
     let rounded = (h * 10).rounded() / 10
@@ -218,8 +233,7 @@ private let buildViewState: @MainActor @Sendable (ReportResultFeature.State) -> 
             breakdownRows: [], netCardLabel: "",
             finePrintHeading: "", finePrintBody: "",
             printButtonLabel: "Print / PDF",
-            pdfShareable: nil,
-            isPreviewPresented: false
+            preview: .dismissed
         )
     }
 
@@ -285,12 +299,15 @@ private let buildViewState: @MainActor @Sendable (ReportResultFeature.State) -> 
         finePrintHeading: "HOW THIS IS WORKED OUT",
         finePrintBody: finePrint,
         printButtonLabel: "Print / PDF",
-        pdfShareable: state.pdfData.map { data in
-            let name = periodLabel.isEmpty ? "payslip.pdf" : "payslip-\(periodLabel).pdf"
-                .replacingOccurrences(of: " ", with: "-")
-                .replacingOccurrences(of: "/", with: "-")
-            return PDFShareable(data: data, filename: name)
-        },
-        isPreviewPresented: state.pdfData != nil
+        preview: state.preview
     )
+}
+
+// MARK: - Seeding
+
+public extension ReportResultFeature.State {
+    /// A fresh screen for a generated report. The locale-formatted strings are derived on `.start`.
+    init(report: PayReport, records: [WorkDayRecord], from: Date, to: Date) {
+        self.init(report: report, records: records, fromDate: from, toDate: to, preview: .dismissed, rendered: nil)
+    }
 }

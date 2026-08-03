@@ -296,11 +296,6 @@ struct ReportInputFeatureMapActionTests {
         let action = ReportInputFeature.mapAction(.mock())(.setFrom(Fixture.today))
         #expect(ReportInputFeature.Action.prism.setFrom.preview(action) == Fixture.today)
     }
-
-    @Test func backMapsToBack() {
-        let action = ReportInputFeature.mapAction(.mock())(.back)
-        #expect(ReportInputFeature.Action.prism.back.preview(action) != nil)
-    }
 }
 
 // MARK: - Snapshot tests

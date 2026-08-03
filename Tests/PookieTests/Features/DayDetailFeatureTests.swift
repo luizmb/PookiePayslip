@@ -171,13 +171,6 @@ struct DayDetailFeatureBehaviorTests {
         s.receive(DayDetailFeature.Action.prism.saveCompleted) { _, _ in }
     }
 
-    // MARK: - passthrough actions (handled by bridgeBehavior)
-
-    @Test func doneIsPassthrough() {
-        let s = store(exhaustive: false)
-        s.dispatch(.done, assert: { _ in })
-    }
-
     @Test func prevDayLoadsRecord() async {
         var initial = DayDetailFeature.initialState(with: ())
         initial.date = Fixture.todayMidnight
@@ -286,7 +279,6 @@ struct DayDetailFeatureMapStateTests {
         #expect(!vs.addBreakLabel.isEmpty)
         #expect(!vs.nowButtonLabel.isEmpty)
         #expect(!vs.timePlaceholder.isEmpty)
-        #expect(!vs.doneButtonLabel.isEmpty)
     }
 }
 
@@ -309,11 +301,6 @@ struct DayDetailFeatureMapActionTests {
     @Test func addBreakMapsThrough() {
         let action = DayDetailFeature.mapAction(.mock())(.addBreak)
         #expect(DayDetailFeature.Action.prism.addBreak.preview(action) != nil)
-    }
-
-    @Test func doneMapsThrough() {
-        let action = DayDetailFeature.mapAction(.mock())(.done)
-        #expect(DayDetailFeature.Action.prism.done.preview(action) != nil)
     }
 
     @Test func prevDayMapsThrough() {

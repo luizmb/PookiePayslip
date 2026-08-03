@@ -58,7 +58,7 @@ public enum CalendarFeature {
         case openSalaryEditor
         case openSettings
         case salaryUpdated(SalaryRecord)
-        case recordUpdated(WorkDayRecord)   // pushed by bridgeBehavior after DayDetail saves
+        case recordUpdated(WorkDayRecord)   // routed from DayDetail's .saveCompleted by AppFeature's fold
         case setRendered(Rendered)          // behavior-computed grid/labels/title/earnings
     }
 
@@ -208,7 +208,7 @@ public enum CalendarFeature {
                 return .reduce { $0.rendered = rendered }
 
             case .selectDay, .openReport, .openSalaryEditor, .openSettings:
-                return .doNothing  // handled by bridgeBehavior in AppCore
+                return .doNothing  // AppFeature's fold turns these into navigation pushes
             }
         }
     }

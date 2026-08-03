@@ -7,7 +7,6 @@ let package = Package(
     products: [
         .library(name: "PookieStyle",          targets: ["PookieStyle"]),
         .library(name: "AppDomain",            targets: ["AppDomain"]),
-        .library(name: "NavigationFeature",    targets: ["NavigationFeature"]),
         .library(name: "CalendarFeature",      targets: ["CalendarFeature"]),
         .library(name: "DayDetailFeature",     targets: ["DayDetailFeature"]),
         .library(name: "ReportInputFeature",   targets: ["ReportInputFeature"]),
@@ -47,21 +46,6 @@ let package = Package(
 
         // MARK: - Features
 
-        .target(
-            name: "NavigationFeature",
-            dependencies: [
-                "AppDomain",
-                .product(name: "SwiftRex",              package: "SwiftRex"),
-                .product(name: "SwiftRex.SwiftUI",      package: "SwiftRex"),
-                .product(name: "SwiftRex.Architecture", package: "SwiftRex"),
-                .product(name: "SwiftRex.Operators",    package: "SwiftRex"),
-                .product(name: "CoreFP",                package: "FP"),
-                .product(name: "CoreFPOperators",       package: "FP"),
-                .product(name: "FPMacros",              package: "FP"),
-                "PookieStyle",
-            ],
-            path: "Sources/NavigationFeature"
-        ),
 
         .target(
             name: "CalendarFeature",
@@ -182,7 +166,6 @@ let package = Package(
             name: "AppCore",
             dependencies: [
                 "AppDomain",
-                "NavigationFeature",
                 "CalendarFeature",
                 "DayDetailFeature",
                 "ReportInputFeature",
