@@ -17,7 +17,13 @@ struct TestFeature<F: Feature> {
     let view: F.Body
 
     init(initial: F.State, environment: F.Environment) {
-        let store = Store(initial: initial, behavior: .identity, environment: environment)
+        // Spelled out rather than `.identity`: a bare leading dot leaves `Action` unconstrained here,
+        // since nothing else in the expression mentions it.
+        let store = Store(
+            initial: initial,
+            behavior: Behavior<F.Action, F.State, F.Environment>.identity,
+            environment: environment
+        )
         view = F.view(store: store, environment: environment)
     }
 
@@ -25,6 +31,13 @@ struct TestFeature<F: Feature> {
 }
 
 /// Captures one iPhone-sized snapshot of the feature's frozen initial state.
+///
+/// The view is pinned to a fixed locale, calendar and time zone. The app's own strings are formatted by
+/// injected `World` formatters and so are already deterministic, but **system controls are not**:
+/// `DatePicker` reads the ambient `Locale`/`Calendar` from the SwiftUI environment, and its rendering —
+/// including its intrinsic width, which then resizes the card around it — changes with the host's region
+/// settings. Without this, references only reproduce on a machine configured like the one that recorded
+/// them. Same rule as everywhere else in this codebase: no `Locale.current`, inject it.
 @available(iOS 17, macOS 14, tvOS 17, watchOS 10, *)
 @MainActor
 func snap<F: Feature>(
@@ -36,7 +49,10 @@ func snap<F: Feature>(
 ) async {
     await feature.ignoringActions {
         assertSnapshot(
-            of: feature.view,
+            of: feature.view
+                .environment(\.locale, Fixture.locale)
+                .environment(\.calendar, Fixture.calendar)
+                .environment(\.timeZone, Fixture.timeZone),
             as: .image(layout: iPhoneLayout),
             named: baseName,
             file: file,
