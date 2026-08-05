@@ -24,14 +24,30 @@ private func zipDirectory(_ dir: URL) -> Result<Data, ExportError> {
     return payload
 }
 
+// Builds up to 1.x kept the data in Application Support, which the Files app cannot expose.
+// Moves whatever is left there into `dir` — never clobbering a file already present — and drops the
+// old directory once it is empty. A no-op on a fresh install and on every launch after the first.
+private func migrateFromApplicationSupport(into dir: URL) {
+    let fm = FileManager.default
+    let legacy = URL.applicationSupportDirectory.appending(path: "PookiePayslip", directoryHint: .isDirectory)
+    guard let leftovers = try? fm.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil) else { return }
+    for file in leftovers {
+        let destination = dir.appending(path: file.lastPathComponent)
+        if !fm.fileExists(atPath: destination.path()) { try? fm.moveItem(at: file, to: destination) }
+    }
+    if (try? fm.contentsOfDirectory(at: legacy, includingPropertiesForKeys: nil))?.isEmpty == true {
+        try? fm.removeItem(at: legacy)
+    }
+}
+
 extension FileIO {
     static let live: FileIO = {
-        let dir: URL = {
-            let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            let dir = support.appending(path: "PookiePayslip", directoryHint: .isDirectory)
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            return dir
-        }()
+        // Documents, not Application Support: with `UIFileSharingEnabled` it is the only directory in
+        // the container the Files app surfaces, and settings.json / the MM-YYYY.json files are meant
+        // to be browsable and copyable out. Unnested, so they show up as soon as the folder is opened.
+        let dir = URL.documentsDirectory
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        migrateFromApplicationSupport(into: dir)
 
         return FileIO(
             read: { filename in
