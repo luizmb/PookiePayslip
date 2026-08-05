@@ -35,5 +35,5 @@ public struct AppSettings: Codable, Sendable, Equatable {
     }
 }
 
-/// Fixed filename for the persisted settings (in the app-support directory alongside month files).
+/// Fixed filename for the persisted settings (in the documents directory alongside month files).
 public let settingsFilename = "settings.json"
